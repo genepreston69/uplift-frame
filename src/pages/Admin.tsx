@@ -374,6 +374,8 @@ const Admin: React.FC = () => {
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       case 'Community Resources':
         return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
+      case 'Just for Fun':
+        return 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }

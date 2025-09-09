@@ -17,7 +17,8 @@ const CATEGORIES = [
   'Healthcare Services',
   'Legal Aid',
   'Financial Assistance',
-  'Community Resources'
+  'Community Resources',
+  'Just for Fun'
 ];
 
 interface ExternalLinkItem {
