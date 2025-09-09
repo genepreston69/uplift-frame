@@ -15,7 +15,8 @@ const CATEGORIES = [
   'GED Prep',
   'Family Resources',
   'Spiritual Library',
-  'Driver\'s Licensure'
+  'Driver\'s Licensure',
+  'Just for Fun'
 ];
 
 interface Resource {
