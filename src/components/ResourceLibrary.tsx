@@ -136,7 +136,7 @@ export const ResourceLibrary: React.FC = () => {
           Resource Library
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Access helpful resources for your recovery journey.
+          Access helpful resources for your client journey.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">

@@ -30,7 +30,7 @@ const Index = () => {
                 className="max-w-full max-h-full object-contain"
               />
             </div>
-            <CardTitle className="text-2xl">Recovery Resource Portal</CardTitle>
+            <CardTitle className="text-2xl">Client Resource Portal</CardTitle>
             <p className="text-muted-foreground text-sm">
               Secure access to resources and support services
             </p>
@@ -98,7 +98,7 @@ const Index = () => {
           <div className="w-full max-w-4xl mx-auto space-y-6">
             <Card>
               <CardHeader className="text-center">
-                <CardTitle className="text-3xl">Welcome to the Recovery Resource Portal</CardTitle>
+                <CardTitle className="text-3xl">Welcome to the Client Resource Portal</CardTitle>
                 <p className="text-muted-foreground">
                   Access forms, resources, and support services during your session.
                 </p>
@@ -193,7 +193,7 @@ const Index = () => {
                 alt="Recovery Point West Virginia"
                 className="h-8 object-contain"
               />
-              <span className="text-xl font-semibold">Recovery Portal</span>
+              <span className="text-xl font-semibold">Client Portal</span>
             </div>
             
             <div className="flex gap-1">
