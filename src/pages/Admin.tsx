@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ResourceForm } from '@/components/ResourceForm';
+import { ExternalLinksForm } from '@/components/ExternalLinksForm';
 import { 
   FileText, 
   Lightbulb, 
@@ -23,7 +24,8 @@ import {
   BookOpen,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 
 interface Submission {
@@ -63,6 +65,16 @@ interface Resource {
   created_at: string;
 }
 
+interface ExternalLinkItem {
+  id: string;
+  title: string;
+  category: string;
+  description: string | null;
+  guide_text: string | null;
+  url: string;
+  created_at: string;
+}
+
 const ADMIN_PASSWORD = "admin";
 
 const Admin: React.FC = () => {
@@ -77,6 +89,9 @@ const Admin: React.FC = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [showResourceForm, setShowResourceForm] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | undefined>(undefined);
+  const [externalLinks, setExternalLinks] = useState<ExternalLinkItem[]>([]);
+  const [showExternalLinksForm, setShowExternalLinksForm] = useState(false);
+  const [editingExternalLink, setEditingExternalLink] = useState<ExternalLinkItem | undefined>(undefined);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -171,6 +186,7 @@ const Admin: React.FC = () => {
       fetchSubmissions();
       fetchSessions();
       fetchResources();
+      fetchExternalLinks();
     }
   }, [isAuthenticated, sortField, sortOrder]);
 
@@ -282,6 +298,87 @@ const Admin: React.FC = () => {
     setEditingResource(undefined);
   };
 
+  const fetchExternalLinks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('external_links')
+        .select('*')
+        .order('category', { ascending: true })
+        .order('title', { ascending: true });
+
+      if (error) throw error;
+      setExternalLinks(data || []);
+    } catch (error) {
+      console.error('Error fetching external links:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch external links.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteExternalLink = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this external link?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('external_links')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "External link deleted successfully."
+      });
+      
+      fetchExternalLinks();
+    } catch (error) {
+      console.error('Error deleting external link:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete external link.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleExternalLinksFormSave = () => {
+    setShowExternalLinksForm(false);
+    setEditingExternalLink(undefined);
+    fetchExternalLinks();
+  };
+
+  const handleExternalLinksFormCancel = () => {
+    setShowExternalLinksForm(false);
+    setEditingExternalLink(undefined);
+  };
+
+  const getExternalLinksCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Employment Services':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'Housing Assistance':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'Education Resources':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'Family Support':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+      case 'Healthcare Services':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'Legal Aid':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+      case 'Financial Assistance':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'Community Resources':
+        return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
+  };
+
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'Employment Prep':
@@ -360,9 +457,10 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
+            <TabsTrigger value="links">External Links</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -629,6 +727,105 @@ const Admin: React.FC = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleDeleteResource(resource.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="links" className="space-y-6">
+            {showExternalLinksForm ? (
+              <ExternalLinksForm
+                link={editingExternalLink}
+                onSave={handleExternalLinksFormSave}
+                onCancel={handleExternalLinksFormCancel}
+              />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <ExternalLink className="h-5 w-5" />
+                      External Links ({externalLinks.length})
+                    </CardTitle>
+                    <Button 
+                      onClick={() => setShowExternalLinksForm(true)} 
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add External Link
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {externalLinks.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <ExternalLink className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium mb-2">No external links yet</p>
+                      <p className="text-sm mb-4">Add your first external link to get started.</p>
+                      <Button onClick={() => setShowExternalLinksForm(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add External Link
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>URL</TableHead>
+                            <TableHead>Date Added</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {externalLinks.map((link) => (
+                            <TableRow key={link.id}>
+                              <TableCell className="font-medium">
+                                {link.title}
+                              </TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant="secondary" 
+                                  className={getExternalLinksCategoryColor(link.category)}
+                                >
+                                  {link.category}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="max-w-xs truncate">
+                                {link.url}
+                              </TableCell>
+                              <TableCell>
+                                {new Date(link.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingExternalLink(link);
+                                      setShowExternalLinksForm(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteExternalLink(link.id)}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>

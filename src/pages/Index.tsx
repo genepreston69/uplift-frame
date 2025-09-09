@@ -6,6 +6,7 @@ import { SessionTimer } from '@/components/SessionTimer';
 import { GrievanceForm } from '@/components/GrievanceForm';
 import { InnovationForm } from '@/components/InnovationForm';
 import { ResourceLibrary } from '@/components/ResourceLibrary';
+import { ExternalLinksDisplay } from '@/components/ExternalLinksDisplay';
 import { FileText, Lightbulb, BookOpen, ExternalLink, Clock } from 'lucide-react';
 
 type ActiveSection = 'home' | 'grievance' | 'innovation' | 'resources' | 'links';
@@ -75,23 +76,9 @@ const Index = () => {
         );
       case 'links':
         return (
-          <Card className="w-full max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ExternalLink className="h-5 w-5" />
-                External Resources
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Helpful external websites and resources.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <ExternalLink className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>External links will be available after admin setup.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="w-full max-w-4xl mx-auto space-y-6">
+            <ExternalLinksDisplay />
+          </div>
         );
       default:
         return (
