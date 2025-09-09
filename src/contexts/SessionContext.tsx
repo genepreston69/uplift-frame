@@ -6,6 +6,8 @@ interface SessionContextType {
   sessionId: string | null;
   timeRemaining: number;
   isActive: boolean;
+  activeSection: string;
+  setActiveSection: (section: string) => void;
   startSession: () => Promise<void>;
   endSession: () => Promise<void>;
   logActivity: (activity: string, details?: any) => void;
@@ -22,6 +24,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isActive, setIsActive] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
   const [activityLog, setActivityLog] = useState<any[]>([]);
   const [lastActivity, setLastActivity] = useState(Date.now());
   const { toast } = useToast();
@@ -67,6 +70,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setSessionId(data.id);
       setTimeRemaining(SESSION_DURATION);
       setIsActive(true);
+      setActiveSection('home'); // Always start at home page
       setActivityLog([]);
       setLastActivity(Date.now());
       
@@ -106,6 +110,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setSessionId(null);
       setTimeRemaining(0);
       setIsActive(false);
+      setActiveSection('home'); // Reset to home page
       setActivityLog([]);
       
       toast({
@@ -170,6 +175,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     sessionId,
     timeRemaining,
     isActive,
+    activeSection,
+    setActiveSection,
     startSession,
     endSession,
     logActivity,

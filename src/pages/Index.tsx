@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSession } from '@/contexts/SessionContext';
@@ -10,8 +10,7 @@ import { FileText, Lightbulb, BookOpen, ExternalLink, Shield, Clock } from 'luci
 type ActiveSection = 'home' | 'grievance' | 'innovation' | 'resources' | 'links';
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState<ActiveSection>('home');
-  const { isActive, startSession, logActivity } = useSession();
+  const { isActive, activeSection, setActiveSection, startSession, logActivity } = useSession();
 
   const handleNavigation = (section: ActiveSection) => {
     setActiveSection(section);
