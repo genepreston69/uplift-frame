@@ -8,46 +8,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Calming recovery-focused color palette */
-    --background: 210 25% 98%;
-    --foreground: 215 25% 25%;
+    /* Recovery Point West Virginia brand colors */
+    --background: 210 20% 98%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 25%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 25%;
+    --popover-foreground: 0 0% 8%;
 
-    /* Calming blue-green primary */
-    --primary: 195 85% 41%;
+    /* Brand blue from logo */
+    --primary: 210 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft secondary colors */
-    --secondary: 195 35% 92%;
-    --secondary-foreground: 215 25% 25%;
+    /* Complementary secondary colors */
+    --secondary: 210 25% 95%;
+    --secondary-foreground: 0 0% 8%;
 
-    --muted: 195 20% 95%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 210 15% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 165 60% 85%;
-    --accent-foreground: 215 25% 25%;
+    --accent: 210 50% 90%;
+    --accent-foreground: 0 0% 8%;
 
-    /* Gentle warning/error colors */
+    /* Professional warning/error colors */
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 195 20% 90%;
-    --input: 195 20% 95%;
-    --ring: 195 85% 41%;
+    --border: 210 20% 88%;
+    --input: 210 15% 96%;
+    --ring: 210 85% 45%;
 
     --radius: 0.75rem;
 
     /* Success colors for form submissions */
-    --success: 165 85% 35%;
+    --success: 142 85% 35%;
     --success-foreground: 0 0% 100%;
 
     /* Session timer colors */
-    --timer-normal: 165 85% 35%;
+    --timer-normal: 142 85% 35%;
     --timer-warning: 45 95% 55%;
     --timer-critical: 0 85% 55%;
 
