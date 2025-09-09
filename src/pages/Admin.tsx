@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  Shield, 
   FileText, 
   Lightbulb, 
   Calendar, 
@@ -210,8 +209,12 @@ const Admin: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-background to-secondary/30 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Shield className="h-8 w-8 text-primary" />
+            <div className="mx-auto w-24 h-16 flex items-center justify-center mb-4">
+              <img 
+                src="/lovable-uploads/e07d40bc-4c8e-4386-af07-b2ac1232475c.png" 
+                alt="Recovery Point West Virginia"
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
             <CardTitle className="text-2xl">Admin Access</CardTitle>
             <p className="text-muted-foreground text-sm">
@@ -246,7 +249,11 @@ const Admin: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8 text-primary" />
+            <img 
+              src="/lovable-uploads/e07d40bc-4c8e-4386-af07-b2ac1232475c.png" 
+              alt="Recovery Point West Virginia"
+              className="h-8 object-contain"
+            />
             <div>
               <h1 className="text-3xl font-bold">Admin Dashboard</h1>
               <p className="text-muted-foreground">Recovery Resource Portal Management</p>
