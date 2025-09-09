@@ -22,7 +22,7 @@ export const SessionTimer: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 bg-card border rounded-lg p-4 shadow-lg">
+    <div className="fixed bottom-4 right-4 z-50 bg-card border rounded-lg p-4 shadow-lg">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-muted-foreground" />
