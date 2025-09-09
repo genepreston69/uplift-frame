@@ -10,15 +10,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, Copy } from 'lucide-react';
 
-const INCIDENT_LOCATIONS = [
-  'Common Area',
-  'Kitchen',
-  'Bedroom',
-  'Bathroom',
-  'Outside',
-  'Office',
-  'Meeting Room',
-  'Other'
+const LOCATIONS = [
+  'Bluefield',
+  'Charleston',
+  'Huntington',
+  'Parkersburg'
 ];
 
 export const GrievanceForm: React.FC = () => {
@@ -47,7 +43,7 @@ export const GrievanceForm: React.FC = () => {
     if (!description.trim() || !location) {
       toast({
         title: "Missing Information",
-        description: "Please fill in the description and incident location.",
+        description: "Please fill in the description and location.",
         variant: "destructive"
       });
       return;
@@ -186,14 +182,14 @@ export const GrievanceForm: React.FC = () => {
 
           <div>
             <Label htmlFor="location">
-              Incident Location <span className="text-red-500">*</span>
+              Location <span className="text-red-500">*</span>
             </Label>
             <Select value={location} onValueChange={setLocation}>
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Where did this occur?" />
+                <SelectValue placeholder="Select a location" />
               </SelectTrigger>
               <SelectContent>
-                {INCIDENT_LOCATIONS.map(loc => (
+                {LOCATIONS.map(loc => (
                   <SelectItem key={loc} value={loc}>{loc}</SelectItem>
                 ))}
               </SelectContent>
