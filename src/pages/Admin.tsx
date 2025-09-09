@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { ResourceForm } from '@/components/ResourceForm';
 import { 
   FileText, 
   Lightbulb, 
@@ -18,7 +19,11 @@ import {
   Copy, 
   Download,
   Eye,
-  ArrowUpDown
+  ArrowUpDown,
+  BookOpen,
+  Plus,
+  Edit,
+  Trash2
 } from 'lucide-react';
 
 interface Submission {
@@ -47,6 +52,17 @@ interface Analytics {
   peakHours: { hour: number; count: number }[];
 }
 
+interface Resource {
+  id: string;
+  title: string;
+  category: string;
+  description: string | null;
+  guide_text: string | null;
+  url: string | null;
+  file_url: string | null;
+  created_at: string;
+}
+
 const ADMIN_PASSWORD = "admin";
 
 const Admin: React.FC = () => {
@@ -58,6 +74,9 @@ const Admin: React.FC = () => {
   const [sortField, setSortField] = useState<'created_at' | 'type'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [editingResource, setEditingResource] = useState<Resource | undefined>(undefined);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -151,6 +170,7 @@ const Admin: React.FC = () => {
     if (isAuthenticated) {
       fetchSubmissions();
       fetchSessions();
+      fetchResources();
     }
   }, [isAuthenticated, sortField, sortOrder]);
 
@@ -202,6 +222,81 @@ const Admin: React.FC = () => {
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:00 ${period}`;
+  };
+
+  const fetchResources = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('resources')
+        .select('*')
+        .order('category', { ascending: true })
+        .order('title', { ascending: true });
+
+      if (error) throw error;
+      setResources(data || []);
+    } catch (error) {
+      console.error('Error fetching resources:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch resources.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteResource = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this resource?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Resource deleted successfully."
+      });
+      
+      fetchResources();
+    } catch (error) {
+      console.error('Error deleting resource:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete resource.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleResourceFormSave = () => {
+    setShowResourceForm(false);
+    setEditingResource(undefined);
+    fetchResources();
+  };
+
+  const handleResourceFormCancel = () => {
+    setShowResourceForm(false);
+    setEditingResource(undefined);
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Employment Prep':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'Housing Resources':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'GED Prep':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'Family Resources':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+      case 'Spiritual Library':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+    }
   };
 
   if (!isAuthenticated) {
@@ -265,8 +360,9 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
+            <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -446,6 +542,107 @@ const Admin: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="resources" className="space-y-6">
+            {showResourceForm ? (
+              <ResourceForm
+                resource={editingResource}
+                onSave={handleResourceFormSave}
+                onCancel={handleResourceFormCancel}
+              />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      Resource Library ({resources.length})
+                    </CardTitle>
+                    <Button 
+                      onClick={() => setShowResourceForm(true)} 
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Resource
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {resources.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium mb-2">No resources yet</p>
+                      <p className="text-sm mb-4">Add your first resource to get started.</p>
+                      <Button onClick={() => setShowResourceForm(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Resource
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Date Added</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {resources.map((resource) => (
+                            <TableRow key={resource.id}>
+                              <TableCell className="font-medium">
+                                {resource.title}
+                              </TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant="secondary" 
+                                  className={getCategoryColor(resource.category)}
+                                >
+                                  {resource.category}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {resource.file_url ? 'File' : 'Link'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {new Date(resource.created_at).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex gap-2 justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingResource(resource);
+                                      setShowResourceForm(true);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteResource(resource.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
