@@ -48,7 +48,7 @@ interface Analytics {
   peakHours: { hour: number; count: number }[];
 }
 
-const ADMIN_PASSWORD = "RecoveryAdmin2024!";
+const ADMIN_PASSWORD = "admin";
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
