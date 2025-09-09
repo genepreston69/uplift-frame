@@ -14,7 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      resources: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_url: string | null
+          guide_text: string | null
+          id: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          guide_text?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          guide_text?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          activity_log: Json | null
+          created_at: string
+          duration: number | null
+          end_time: string | null
+          id: string
+          start_time: string
+        }
+        Insert: {
+          activity_log?: Json | null
+          created_at?: string
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          start_time?: string
+        }
+        Update: {
+          activity_log?: Json | null
+          created_at?: string
+          duration?: number | null
+          end_time?: string | null
+          id?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          reference_number: string
+          session_id: string | null
+          type: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          id?: string
+          reference_number: string
+          session_id?: string | null
+          type: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          reference_number?: string
+          session_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
