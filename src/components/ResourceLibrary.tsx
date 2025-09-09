@@ -85,12 +85,29 @@ export const ResourceLibrary: React.FC = () => {
     setFilteredResources(filtered);
   }, [resources, searchTerm, selectedCategory]);
 
-  const handleResourceAccess = (resource: Resource) => {
+  const handleResourceAccess = (resource: Resource, action: 'view' | 'download' = 'view') => {
     if (resource.url) {
       window.open(resource.url, '_blank');
     } else if (resource.file_url) {
-      window.open(resource.file_url, '_blank');
+      if (action === 'download') {
+        // Force download by creating a temporary link with download attribute
+        const link = document.createElement('a');
+        link.href = resource.file_url;
+        link.download = resource.title;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Open in new tab for viewing
+        window.open(resource.file_url, '_blank');
+      }
     }
+  };
+
+  const isViewableFile = (fileUrl: string | null) => {
+    if (!fileUrl) return false;
+    const viewableExtensions = ['.pdf', '.txt', '.html', '.htm', '.png', '.jpg', '.jpeg', '.gif', '.svg'];
+    return viewableExtensions.some(ext => fileUrl.toLowerCase().includes(ext));
   };
 
   const getCategoryColor = (category: string) => {
@@ -216,25 +233,45 @@ export const ResourceLibrary: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={() => handleResourceAccess(resource)}
-                      disabled={!resource.url && !resource.file_url}
-                      size="sm"
-                    >
-                      {resource.file_url ? (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </>
-                      ) : (
-                        <>
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Open Link
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                   <div className="flex justify-end gap-2">
+                     {resource.file_url && isViewableFile(resource.file_url) ? (
+                       <>
+                         <Button
+                           onClick={() => handleResourceAccess(resource, 'view')}
+                           size="sm"
+                           variant="outline"
+                         >
+                           <ExternalLink className="h-4 w-4 mr-2" />
+                           View
+                         </Button>
+                         <Button
+                           onClick={() => handleResourceAccess(resource, 'download')}
+                           size="sm"
+                         >
+                           <Download className="h-4 w-4 mr-2" />
+                           Download
+                         </Button>
+                       </>
+                     ) : (
+                       <Button
+                         onClick={() => handleResourceAccess(resource)}
+                         disabled={!resource.url && !resource.file_url}
+                         size="sm"
+                       >
+                         {resource.file_url ? (
+                           <>
+                             <Download className="h-4 w-4 mr-2" />
+                             Download
+                           </>
+                         ) : (
+                           <>
+                             <ExternalLink className="h-4 w-4 mr-2" />
+                             Open Link
+                           </>
+                         )}
+                       </Button>
+                     )}
+                   </div>
                 </CardContent>
               </Card>
             ))}
