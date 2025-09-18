@@ -7,13 +7,15 @@ import { GrievanceForm } from '@/components/GrievanceForm';
 import { InnovationForm } from '@/components/InnovationForm';
 import { ResourceLibrary } from '@/components/ResourceLibrary';
 import { ExternalLinksDisplay } from '@/components/ExternalLinksDisplay';
-import { FileText, Lightbulb, BookOpen, ExternalLink, Clock, Sparkles, ArrowRight } from 'lucide-react';
+import { FileText, Lightbulb, BookOpen, ExternalLink, Clock, Sparkles, ArrowRight, ClipboardList } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type ActiveSection = 'home' | 'grievance' | 'innovation' | 'resources' | 'links';
 
 const Index = () => {
   const { isActive, activeSection, setActiveSection, startSession, logActivity } = useSession();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleNavigation = (section: ActiveSection) => {
     setActiveSection(section);
@@ -100,7 +102,7 @@ const Index = () => {
               </CardHeader>
             </Card>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card 
                 className={`
                   relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
@@ -260,6 +262,46 @@ const Index = () => {
                   </Button>
                 </CardContent>
               </Card>
+
+              <Card 
+                className={`
+                  relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
+                  bg-gradient-to-br from-purple-500/10 to-purple-600/20 hover:from-purple-500/20 hover:to-purple-600/30 border-purple-500/30
+                  ${hoveredCard === 'survey' ? 'shadow-xl scale-[1.02] -translate-y-1' : 'shadow-md hover:shadow-lg'}
+                `}
+                onMouseEnter={() => setHoveredCard('survey')}
+                onMouseLeave={() => setHoveredCard(null)}
+                onClick={() => navigate('/survey')}
+              >
+                {/* Animated background gradient */}
+                <div className={`
+                  absolute inset-0 bg-gradient-to-br from-transparent via-purple-500/5 to-transparent
+                  transition-opacity duration-500
+                  ${hoveredCard === 'survey' ? 'opacity-100' : 'opacity-0'}
+                `} />
+                
+                <CardHeader className="relative">
+                  <CardTitle className="flex items-center gap-3">
+                    <div className={`
+                      p-2 bg-purple-500/10 rounded-lg
+                      transition-all duration-300
+                      ${hoveredCard === 'survey' ? 'scale-110 rotate-3' : ''}
+                    `}>
+                      <ClipboardList className="h-6 w-6 text-purple-600" />
+                    </div>
+                    Client Survey
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Share your feedback about your recovery experience.
+                  </p>
+                </CardHeader>
+                <CardContent className="relative">
+                  <Button variant="outline" className="w-full hover:scale-105 transition-all">
+                    <ArrowRight className="h-4 w-4 mr-2" />
+                    Take Survey
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
@@ -327,6 +369,14 @@ const Index = () => {
                 className="hover:scale-105 transition-all"
               >
                 Links
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/survey')}
+                size="sm"
+                className="hover:scale-105 transition-all"
+              >
+                Survey
               </Button>
             </div>
           </div>

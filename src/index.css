@@ -51,6 +51,10 @@ All colors MUST be HSL.
     --timer-warning: 45 95% 55%;
     --timer-critical: 0 85% 55%;
 
+    /* Purple colors for survey */
+    --purple: 270 70% 60%;
+    --purple-foreground: 0 0% 100%;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
