@@ -72,8 +72,6 @@ const Index = () => {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'grievance':
-        return <GrievanceForm />;
       case 'innovation':
         return <InnovationForm />;
       case 'resources':
@@ -103,47 +101,7 @@ const Index = () => {
             </Card>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card 
-                className={`
-                  relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
-                  bg-gradient-to-br from-primary/10 to-primary/20 hover:from-primary/20 hover:to-primary/30 border-primary/30
-                  ${hoveredCard === 'grievance' ? 'shadow-xl scale-[1.02] -translate-y-1' : 'shadow-md hover:shadow-lg'}
-                `}
-                onMouseEnter={() => setHoveredCard('grievance')}
-                onMouseLeave={() => setHoveredCard(null)}
-                onClick={() => handleNavigation('grievance')}
-              >
-                {/* Animated background gradient */}
-                <div className={`
-                  absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent
-                  transition-opacity duration-500
-                  ${hoveredCard === 'grievance' ? 'opacity-100' : 'opacity-0'}
-                `} />
-                
-                <CardHeader className="relative">
-                  <CardTitle className="flex items-center gap-3">
-                    <div className={`
-                      p-2 bg-primary/10 rounded-lg
-                      transition-all duration-300
-                      ${hoveredCard === 'grievance' ? 'scale-110 rotate-3' : ''}
-                    `}>
-                      <FileText className="h-6 w-6 text-primary" />
-                    </div>
-                    File a Grievance
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Report concerns or issues that need staff attention.
-                  </p>
-                </CardHeader>
-                <CardContent className="relative">
-                  <Button variant="outline" className="w-full hover:scale-105 transition-all">
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                    Open Grievance Form
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card 
+              <Card
                 className={`
                   relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
                   bg-gradient-to-br from-accent/10 to-accent/20 hover:from-accent/20 hover:to-accent/30 border-accent/30
@@ -337,14 +295,6 @@ const Index = () => {
                 className="hover:scale-105 transition-all"
               >
                 Home
-              </Button>
-              <Button
-                variant={activeSection === 'grievance' ? 'default' : 'ghost'}
-                onClick={() => handleNavigation('grievance')}
-                size="sm"
-                className="hover:scale-105 transition-all"
-              >
-                Grievance
               </Button>
               <Button
                 variant={activeSection === 'innovation' ? 'default' : 'ghost'}
