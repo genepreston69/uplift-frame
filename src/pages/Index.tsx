@@ -72,8 +72,6 @@ const Index = () => {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'innovation':
-        return <InnovationForm />;
       case 'resources':
         return (
           <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -102,46 +100,6 @@ const Index = () => {
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card
-                className={`
-                  relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
-                  bg-gradient-to-br from-accent/10 to-accent/20 hover:from-accent/20 hover:to-accent/30 border-accent/30
-                  ${hoveredCard === 'innovation' ? 'shadow-xl scale-[1.02] -translate-y-1' : 'shadow-md hover:shadow-lg'}
-                `}
-                onMouseEnter={() => setHoveredCard('innovation')}
-                onMouseLeave={() => setHoveredCard(null)}
-                onClick={() => handleNavigation('innovation')}
-              >
-                {/* Animated background gradient */}
-                <div className={`
-                  absolute inset-0 bg-gradient-to-br from-transparent via-accent/5 to-transparent
-                  transition-opacity duration-500
-                  ${hoveredCard === 'innovation' ? 'opacity-100' : 'opacity-0'}
-                `} />
-                
-                <CardHeader className="relative">
-                  <CardTitle className="flex items-center gap-3">
-                    <div className={`
-                      p-2 bg-accent/10 rounded-lg
-                      transition-all duration-300
-                      ${hoveredCard === 'innovation' ? 'scale-110 rotate-3' : ''}
-                    `}>
-                      <Sparkles className="h-6 w-6 text-accent-foreground" />
-                    </div>
-                    Innovation Ideas
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Share ideas to improve our community and programs.
-                  </p>
-                </CardHeader>
-                <CardContent className="relative">
-                  <Button variant="outline" className="w-full hover:scale-105 transition-all">
-                    <ArrowRight className="h-4 w-4 mr-2" />
-                    Share Your Idea
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card 
                 className={`
                   relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
                   bg-gradient-to-br from-primary/15 to-primary/25 hover:from-primary/25 hover:to-primary/35 border-primary/35
@@ -295,14 +253,6 @@ const Index = () => {
                 className="hover:scale-105 transition-all"
               >
                 Home
-              </Button>
-              <Button
-                variant={activeSection === 'innovation' ? 'default' : 'ghost'}
-                onClick={() => handleNavigation('innovation')}
-                size="sm"
-                className="hover:scale-105 transition-all"
-              >
-                Ideas
               </Button>
               <Button
                 variant={activeSection === 'resources' ? 'default' : 'ghost'}
