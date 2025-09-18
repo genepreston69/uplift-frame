@@ -133,10 +133,15 @@ const ClientSurvey = () => {
       };
 
       const { error } = await supabase
-        .from('submissions')
+        .from('survey_responses')
         .insert({
-          type: 'client_survey',
-          content: surveyData,
+          tenure,
+          responses,
+          open_feedback: {
+            working_well: workingWell.trim(),
+            improvements: improvements.trim(),
+            additional_comments: additionalComments.trim()
+          },
           reference_number: refNumber,
           session_id: sessionId,
         });

@@ -145,6 +145,44 @@ export type Database = {
           },
         ]
       }
+      survey_responses: {
+        Row: {
+          created_at: string
+          id: string
+          open_feedback: Json
+          reference_number: string
+          responses: Json
+          session_id: string | null
+          tenure: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          open_feedback?: Json
+          reference_number: string
+          responses?: Json
+          session_id?: string | null
+          tenure: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          open_feedback?: Json
+          reference_number?: string
+          responses?: Json
+          session_id?: string | null
+          tenure?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
