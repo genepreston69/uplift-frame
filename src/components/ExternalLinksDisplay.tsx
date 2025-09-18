@@ -18,7 +18,8 @@ const CATEGORIES = [
   'Healthcare Services',
   'Legal Aid',
   'Financial Assistance',
-  'Community Resources'
+  'Community Resources',
+  'Just for Fun'
 ];
 
 interface ExternalLinkItem {
@@ -107,23 +108,25 @@ export const ExternalLinksDisplay: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'Employment Services':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+        return 'bg-primary/10 text-primary border-primary/20';
       case 'Housing Assistance':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        return 'bg-accent/10 text-accent-foreground border-accent/20';
       case 'Education Resources':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+        return 'bg-primary/15 text-primary border-primary/25';
       case 'Family Support':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+        return 'bg-secondary/10 text-secondary-foreground border-secondary/20';
       case 'Healthcare Services':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+        return 'bg-destructive/10 text-destructive-foreground border-destructive/20';
       case 'Legal Aid':
-        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+        return 'bg-primary/20 text-primary border-primary/30';
       case 'Financial Assistance':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+        return 'bg-accent/15 text-accent-foreground border-accent/25';
       case 'Community Resources':
-        return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300';
+        return 'bg-secondary/15 text-secondary-foreground border-secondary/25';
+      case 'Just for Fun':
+        return 'bg-accent/20 text-accent-foreground border-accent/30';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        return 'bg-muted/20 text-muted-foreground border-muted/30';
     }
   };
 
