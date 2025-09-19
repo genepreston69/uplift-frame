@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/contexts/SessionContext';
-import { ExternalLink, Search, Filter, Globe, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ExternalLink, Search, Filter, Globe, ArrowUpRight, Sparkles, Shield, AlertTriangle } from 'lucide-react';
+import { SecurityWarningDialog } from '@/components/SecurityWarningDialog';
+import { getDomainStatus, getDomainFromUrl as getCleanDomain } from '@/lib/domainWhitelist';
 
 const CATEGORIES = [
   'All Categories',
@@ -39,6 +41,8 @@ export const ExternalLinksDisplay: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedLink, setSelectedLink] = useState<ExternalLinkItem | null>(null);
   const { toast } = useToast();
   const { logActivity } = useSession();
 
@@ -89,11 +93,36 @@ export const ExternalLinksDisplay: React.FC = () => {
   }, [links, searchTerm, selectedCategory]);
 
   const handleLinkClick = (link: ExternalLinkItem) => {
+    const domainStatus = getDomainStatus(link.url);
+    
+    // For blocked domains, show toast and return
+    if (domainStatus === 'blocked') {
+      toast({
+        title: "Access Restricted",
+        description: "This domain has been blocked for security reasons.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // For verified domains, proceed directly
+    if (domainStatus === 'verified') {
+      proceedToLink(link);
+      return;
+    }
+    
+    // For warning domains, show security dialog
+    setSelectedLink(link);
+    setDialogOpen(true);
+  };
+
+  const proceedToLink = (link: ExternalLinkItem) => {
     logActivity('external_link_click', { 
       linkId: link.id, 
       title: link.title, 
       category: link.category, 
-      url: link.url 
+      url: link.url,
+      domainStatus: getDomainStatus(link.url)
     });
 
     const newWindow = window.open(link.url, '_blank', 'noopener,noreferrer');
@@ -102,13 +131,57 @@ export const ExternalLinksDisplay: React.FC = () => {
     }
   };
 
-  // Extract domain from URL for favicon
+  const handleDialogConfirm = () => {
+    if (selectedLink) {
+      proceedToLink(selectedLink);
+    }
+    setDialogOpen(false);
+    setSelectedLink(null);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setSelectedLink(null);
+  };
+
+  // Extract domain from URL for favicon (keeping original function for favicon purposes)
   const getDomainFromUrl = (url: string) => {
     try {
       const domain = new URL(url).hostname;
       return domain.replace('www.', '');
     } catch {
       return '';
+    }
+  };
+
+  // Get security status badge for a link
+  const getSecurityBadge = (url: string) => {
+    const status = getDomainStatus(url);
+    
+    switch (status) {
+      case 'verified':
+        return (
+          <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+            <Shield className="h-3 w-3 mr-1" />
+            Verified
+          </Badge>
+        );
+      case 'warning':
+        return (
+          <Badge variant="outline" className="text-xs bg-timer-warning/10 text-timer-warning border-timer-warning/20">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            External
+          </Badge>
+        );
+      case 'blocked':
+        return (
+          <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Blocked
+          </Badge>
+        );
+      default:
+        return null;
     }
   };
 
@@ -340,13 +413,14 @@ export const ExternalLinksDisplay: React.FC = () => {
                           </div>
                         )}
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge 
                             variant="secondary" 
                             className="text-xs"
                           >
                             {link.category}
                           </Badge>
+                          {getSecurityBadge(link.url)}
                           <span className="text-xs text-muted-foreground truncate flex-1">
                             {getDomainFromUrl(link.url)}
                           </span>
@@ -368,6 +442,17 @@ export const ExternalLinksDisplay: React.FC = () => {
               <span className="font-semibold text-foreground">{links.length}</span> external links
             </p>
           </div>
+        )}
+
+        {/* Security Warning Dialog */}
+        {selectedLink && (
+          <SecurityWarningDialog
+            isOpen={dialogOpen}
+            onClose={handleDialogClose}
+            url={selectedLink.url}
+            title={selectedLink.title}
+            onConfirm={handleDialogConfirm}
+          />
         )}
       </CardContent>
     </Card>
