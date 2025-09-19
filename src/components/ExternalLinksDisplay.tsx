@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/contexts/SessionContext';
 import { ExternalLink, Search, Filter, Globe, ArrowUpRight, Sparkles, Shield, AlertTriangle } from 'lucide-react';
 import { SecurityWarningDialog } from '@/components/SecurityWarningDialog';
+import { RestrictedBrowser } from '@/components/RestrictedBrowser';
 import { getDomainStatus, getDomainFromUrl as getCleanDomain } from '@/lib/domainWhitelist';
 
 const CATEGORIES = [
@@ -42,6 +43,7 @@ export const ExternalLinksDisplay: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [browserOpen, setBrowserOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState<ExternalLinkItem | null>(null);
   const { toast } = useToast();
   const { logActivity } = useSession();
@@ -125,18 +127,25 @@ export const ExternalLinksDisplay: React.FC = () => {
       domainStatus: getDomainStatus(link.url)
     });
 
-    const newWindow = window.open(link.url, '_blank', 'noopener,noreferrer');
-    if (newWindow) {
-      newWindow.opener = null;
-    }
+    // Open in restricted browser (modal with iframe)
+    setSelectedLink(link);
+    setBrowserOpen(true);
   };
 
   const handleDialogConfirm = () => {
     if (selectedLink) {
-      proceedToLink(selectedLink);
+      logActivity('external_link_click', { 
+        linkId: selectedLink.id, 
+        title: selectedLink.title, 
+        category: selectedLink.category, 
+        url: selectedLink.url,
+        domainStatus: getDomainStatus(selectedLink.url)
+      });
+      
+      // Open in restricted browser after confirmation
+      setBrowserOpen(true);
     }
     setDialogOpen(false);
-    setSelectedLink(null);
   };
 
   const handleDialogClose = () => {
@@ -452,6 +461,16 @@ export const ExternalLinksDisplay: React.FC = () => {
             url={selectedLink.url}
             title={selectedLink.title}
             onConfirm={handleDialogConfirm}
+          />
+        )}
+
+        {/* Restricted Browser */}
+        {selectedLink && (
+          <RestrictedBrowser
+            isOpen={browserOpen}
+            onClose={() => setBrowserOpen(false)}
+            url={selectedLink.url}
+            title={selectedLink.title}
           />
         )}
       </CardContent>
