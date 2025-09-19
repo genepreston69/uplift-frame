@@ -149,6 +149,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          location: string | null
           open_feedback: Json
           reference_number: string
           responses: Json
@@ -158,6 +159,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          location?: string | null
           open_feedback?: Json
           reference_number: string
           responses?: Json
@@ -167,6 +169,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          location?: string | null
           open_feedback?: Json
           reference_number?: string
           responses?: Json

@@ -61,6 +61,7 @@ const ratingOptions = [
 const ClientSurvey = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [location, setLocation] = useState('');
   const [tenure, setTenure] = useState('');
   const [responses, setResponses] = useState({});
   const [workingWell, setWorkingWell] = useState('');
@@ -88,9 +89,15 @@ const ClientSurvey = () => {
   const handleNext = () => {
     setShowError('');
     
-    if (currentPage === 0 && !tenure) {
-      setShowError('Please select how long you have been in the program.');
-      return;
+    if (currentPage === 0 && (!location || !tenure)) {
+      if (!location) {
+        setShowError('Please select your location.');
+        return;
+      }
+      if (!tenure) {
+        setShowError('Please select how long you have been in the program.');
+        return;
+      }
     }
     
     if (currentPage > 0 && currentPage < totalPages - 1) {
@@ -123,6 +130,7 @@ const ClientSurvey = () => {
       setReferenceNumber(refNumber);
 
       const surveyData = {
+        location,
         tenure,
         responses,
         open_feedback: {
@@ -135,6 +143,7 @@ const ClientSurvey = () => {
       const { error } = await supabase
         .from('survey_responses')
         .insert({
+          location,
           tenure,
           responses,
           open_feedback: {
@@ -266,6 +275,23 @@ const ClientSurvey = () => {
 
         {currentPage === 0 && (
           <div className="space-y-6">
+            <div className="bg-white/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200">
+              <label className="text-base font-medium mb-4 block text-gray-800">
+                What is your location? <span className="text-red-500">*</span>
+              </label>
+              <select 
+                value={location} 
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg bg-white/70 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              >
+                <option value="">Select your location</option>
+                <option value="Bluefield">Bluefield</option>
+                <option value="Charleston">Charleston</option>
+                <option value="Huntington">Huntington</option>
+                <option value="Parkersburg">Parkersburg</option>
+              </select>
+            </div>
+            
             <div className="bg-white/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200">
               <label className="text-base font-medium mb-4 block text-gray-800">
                 How long have you been at Recovery Point? <span className="text-red-500">*</span>
