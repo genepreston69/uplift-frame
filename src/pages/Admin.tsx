@@ -25,7 +25,8 @@ import {
   Plus,
   Edit,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react';
 
 interface Submission {
@@ -75,6 +76,16 @@ interface ExternalLinkItem {
   created_at: string;
 }
 
+interface SurveyResponse {
+  id: string;
+  tenure: string;
+  responses: any;
+  open_feedback: any;
+  reference_number: string;
+  session_id: string | null;
+  created_at: string;
+}
+
 const ADMIN_PASSWORD = "admin";
 
 const Admin: React.FC = () => {
@@ -92,6 +103,8 @@ const Admin: React.FC = () => {
   const [externalLinks, setExternalLinks] = useState<ExternalLinkItem[]>([]);
   const [showExternalLinksForm, setShowExternalLinksForm] = useState(false);
   const [editingExternalLink, setEditingExternalLink] = useState<ExternalLinkItem | undefined>(undefined);
+  const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
+  const [selectedSurvey, setSelectedSurvey] = useState<SurveyResponse | null>(null);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -187,6 +200,7 @@ const Admin: React.FC = () => {
       fetchSessions();
       fetchResources();
       fetchExternalLinks();
+      fetchSurveyResponses();
     }
   }, [isAuthenticated, sortField, sortOrder]);
 
@@ -313,6 +327,25 @@ const Admin: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to fetch external links.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchSurveyResponses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('survey_responses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSurveyResponses(data || []);
+    } catch (error) {
+      console.error('Error fetching survey responses:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch survey responses.",
         variant: "destructive"
       });
     }
@@ -463,8 +496,9 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
+            <TabsTrigger value="surveys">Surveys</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="links">External Links</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -644,6 +678,179 @@ const Admin: React.FC = () => {
                     </TableBody>
                   </Table>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="surveys" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Survey Responses ({surveyResponses.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {surveyResponses.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">No survey responses yet</p>
+                    <p className="text-sm">Survey responses will appear here once clients complete the feedback form.</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Reference</TableHead>
+                          <TableHead>Tenure</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Satisfaction</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {surveyResponses.map((survey) => (
+                          <TableRow key={survey.id}>
+                            <TableCell className="font-mono font-semibold text-primary">
+                              {survey.reference_number}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {survey.tenure}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(survey.created_at).toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                              {survey.responses?.overall_satisfaction ? (
+                                <Badge variant="secondary">
+                                  {survey.responses.overall_satisfaction}/5
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">N/A</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setSelectedSurvey(survey)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                                  <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                      <MessageSquare className="h-5 w-5" />
+                                      Survey Response
+                                      <Badge variant="outline" className="ml-2">
+                                        {survey.reference_number}
+                                      </Badge>
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <strong>Date:</strong> {new Date(survey.created_at).toLocaleString()}
+                                      </div>
+                                      <div>
+                                        <strong>Tenure:</strong> {survey.tenure}
+                                      </div>
+                                    </div>
+                                    
+                                    {survey.responses && (
+                                      <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold">Survey Responses</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {survey.responses.overall_satisfaction && (
+                                            <div className="p-3 bg-muted rounded-md">
+                                              <strong>Overall Satisfaction:</strong>
+                                              <div className="mt-1 text-2xl font-bold text-primary">
+                                                {survey.responses.overall_satisfaction}/5
+                                              </div>
+                                            </div>
+                                          )}
+                                          {survey.responses.quality_rating && (
+                                            <div className="p-3 bg-muted rounded-md">
+                                              <strong>Quality Rating:</strong>
+                                              <div className="mt-1 text-2xl font-bold text-primary">
+                                                {survey.responses.quality_rating}/5
+                                              </div>
+                                            </div>
+                                          )}
+                                          {survey.responses.staff_helpfulness && (
+                                            <div className="p-3 bg-muted rounded-md">
+                                              <strong>Staff Helpfulness:</strong>
+                                              <div className="mt-1 text-2xl font-bold text-primary">
+                                                {survey.responses.staff_helpfulness}/5
+                                              </div>
+                                            </div>
+                                          )}
+                                          {survey.responses.program_effectiveness && (
+                                            <div className="p-3 bg-muted rounded-md">
+                                              <strong>Program Effectiveness:</strong>
+                                              <div className="mt-1 text-2xl font-bold text-primary">
+                                                {survey.responses.program_effectiveness}/5
+                                              </div>
+                                            </div>
+                                          )}
+                                          {survey.responses.recommend_likelihood && (
+                                            <div className="p-3 bg-muted rounded-md">
+                                              <strong>Recommend Likelihood:</strong>
+                                              <div className="mt-1 text-2xl font-bold text-primary">
+                                                {survey.responses.recommend_likelihood}/5
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {survey.open_feedback && (
+                                      <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold">Open Feedback</h3>
+                                        {survey.open_feedback.working_well && (
+                                          <div>
+                                            <strong>What's working well:</strong>
+                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                              {survey.open_feedback.working_well}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {survey.open_feedback.improvements && (
+                                          <div>
+                                            <strong>Areas for improvement:</strong>
+                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                              {survey.open_feedback.improvements}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {survey.open_feedback.additional_comments && (
+                                          <div>
+                                            <strong>Additional comments:</strong>
+                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                              {survey.open_feedback.additional_comments}
+                                            </p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
