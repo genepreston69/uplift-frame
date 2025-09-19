@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ResourceForm } from '@/components/ResourceForm';
 import { ExternalLinksForm } from '@/components/ExternalLinksForm';
+import { WhitelistManager } from '@/components/WhitelistManager';
 import { 
   FileText, 
   Lightbulb, 
@@ -26,7 +27,8 @@ import {
   Edit,
   Trash2,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 
 interface Submission {
@@ -496,11 +498,12 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
             <TabsTrigger value="surveys">Surveys</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="links">External Links</TabsTrigger>
+            <TabsTrigger value="whitelist">Whitelist</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -1158,6 +1161,10 @@ const Admin: React.FC = () => {
                 </Card>
               </>
             )}
+          </TabsContent>
+
+          <TabsContent value="whitelist" className="space-y-6">
+            <WhitelistManager />
           </TabsContent>
         </Tabs>
       </div>
