@@ -28,6 +28,10 @@ const ClientSurvey = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showError, setShowError] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
+  const [showBypassForm, setShowBypassForm] = useState(false);
+  const [bypassReferenceCode, setBypassReferenceCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [surveyBypassed, setSurveyBypassed] = useState(false);
 
   const { sessionId, logActivity, generateReferenceNumber } = useSession();
   const { toast } = useToast();
@@ -151,6 +155,76 @@ const ClientSurvey = () => {
     }
   };
 
+  const handleBypassVerification = async () => {
+    if (!bypassReferenceCode.trim()) {
+      toast({
+        title: "Reference code required",
+        description: "Please enter your reference code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const { data, error } = await supabase
+        .from('survey_responses')
+        .select('reference_number')
+        .eq('reference_number', bypassReferenceCode.trim().toUpperCase())
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Invalid reference code",
+          description: "The reference code you entered was not found. Please check and try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Valid reference code found
+      setSurveyBypassed(true);
+      await logActivity('survey_bypassed', { reference_number: bypassReferenceCode });
+      toast({
+        title: "Survey bypassed",
+        description: "You can now access the portal.",
+      });
+    } catch (error) {
+      console.error('Error verifying reference code:', error);
+      toast({
+        title: "Verification failed",
+        description: "Unable to verify reference code. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  if (surveyBypassed) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 shadow-xl">
+        <CardHeader className="text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+          <CardTitle className="text-2xl font-bold">
+            Welcome Back!
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-8 text-center space-y-6">
+          <p className="text-lg text-gray-700">
+            Thank you for verifying your survey completion. You can now access all portal features.
+          </p>
+          <Button 
+            onClick={() => window.location.href = '/'}
+            size="lg"
+            className="mt-4"
+          >
+            Continue to Portal
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (showConfirmation) {
     return (
       <Card className="w-full max-w-2xl mx-auto bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-xl">
@@ -171,10 +245,13 @@ const ClientSurvey = () => {
               onClick={copyReferenceNumber}
               variant="outline"
               size="sm"
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              className="border-green-300 text-green-700 hover:bg-green-50 mb-4"
             >
               Copy Reference Number
             </Button>
+            <p className="text-sm text-gray-600 mt-4">
+              Save this reference number! You'll need it to access the portal in future sessions.
+            </p>
           </div>
           
           <div className="space-y-4">
@@ -191,9 +268,13 @@ const ClientSurvey = () => {
                 than you thought it would. Progress is progress, no matter how small."
               </p>
             </div>
-            <p className="text-sm text-gray-500 mt-6">
-              Your next survey will be available in 3 months. Keep up the great work!
-            </p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              size="lg"
+              className="mt-6"
+            >
+              Continue to Portal
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -203,25 +284,66 @@ const ClientSurvey = () => {
   return (
     <Card className="w-full max-w-2xl mx-auto bg-gradient-to-br from-white to-blue-50 border-blue-200 shadow-xl">
       <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
-        <div className="flex items-center gap-2 mb-2">
-          <ClipboardList className="h-6 w-6" />
-          <CardTitle className="text-2xl font-bold">Client Feedback Survey</CardTitle>
-        </div>
-        <p className="text-blue-100 text-sm">
-          Your honest feedback helps us improve our services. This survey is completely anonymous.
-        </p>
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-blue-100 mb-2">
-            <span>Progress</span>
-            <span>{Math.round(((currentPage + 1) / totalPages) * 100)}%</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-6 w-6" />
+            <CardTitle className="text-2xl font-bold">Client Feedback Survey</CardTitle>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-2">
-            <div 
-              className="bg-white h-2 rounded-full transition-all duration-300 ease-in-out"
-              style={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
-            />
-          </div>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setShowBypassForm(!showBypassForm)}
+            className="text-white hover:bg-white/20"
+          >
+            {showBypassForm ? 'Hide' : 'Already Completed?'}
+          </Button>
         </div>
+        
+        {showBypassForm && (
+          <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg mt-4 space-y-3">
+            <p className="text-sm text-blue-100">
+              If you've already completed this survey, enter your reference code to skip:
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={bypassReferenceCode}
+                onChange={(e) => setBypassReferenceCode(e.target.value.toUpperCase())}
+                placeholder="ABC-123"
+                className="flex-1 px-3 py-2 rounded-lg text-gray-900 placeholder:text-gray-500"
+                maxLength={7}
+              />
+              <Button 
+                onClick={handleBypassVerification}
+                disabled={isVerifying}
+                size="sm"
+                variant="secondary"
+              >
+                {isVerifying ? 'Verifying...' : 'Verify'}
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {!showBypassForm && (
+          <>
+            <p className="text-blue-100 text-sm">
+              Your honest feedback helps us improve our services. This survey is completely anonymous.
+            </p>
+            <div className="mt-4">
+              <div className="flex justify-between text-xs text-blue-100 mb-2">
+                <span>Progress</span>
+                <span>{Math.round(((currentPage + 1) / totalPages) * 100)}%</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-white h-2 rounded-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </CardHeader>
       
       <CardContent className="p-6">

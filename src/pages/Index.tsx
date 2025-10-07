@@ -17,6 +17,12 @@ const Index = () => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const handleStartSession = async () => {
+    await startSession();
+    // Redirect to survey immediately after starting session
+    navigate('/survey');
+  };
+
   const handleNavigation = (section: ActiveSection) => {
     setActiveSection(section);
     logActivity('navigation', { section });
@@ -55,7 +61,7 @@ const Index = () => {
               </ul>
             </div>
             <Button 
-              onClick={startSession} 
+              onClick={handleStartSession} 
               className="w-full hover:scale-[1.02] transition-all shadow-lg" 
               size="lg"
             >
