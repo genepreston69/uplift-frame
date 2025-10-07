@@ -16,7 +16,7 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
-const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+const SESSION_DURATION = 60 * 60 * 1000; // 60 minutes
 const IDLE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 const TICK_INTERVAL = 1000; // 1 second
 
@@ -78,7 +78,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       
       toast({
         title: "Session Started",
-        description: "Your 30-minute session has begun."
+        description: "Your 60-minute session has begun."
       });
     } catch (error) {
       console.error('Error starting session:', error);
