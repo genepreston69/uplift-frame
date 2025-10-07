@@ -318,46 +318,31 @@ const ClientSurvey = () => {
             {getCurrentQuestions().map((question, index) => (
               <div key={question.id} className="bg-white/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200">
                 <label className="text-base font-medium text-gray-800 mb-4 block">{question.text}</label>
-                <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={`${question.text} options`}>
+                <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={question.text}>
                   {ratingOptions.map((option) => (
-                    <div key={option.value} className="flex flex-col items-center text-center">
-                      <label
-                        className={`
-                        relative w-full p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleResponseChange(question.id, option.value)}
+                      className={`
+                        relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 text-center
                         ${responses[question.id] === option.value 
                           ? option.color + ' ring-2 ring-offset-2 ring-blue-500' 
                           : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
                         }
                       `}
-                        onClick={() => handleResponseChange(question.id, option.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleResponseChange(question.id, option.value);
-                          }
-                        }}
-                        role="radio"
-                        aria-checked={responses[question.id] === option.value}
-                        tabIndex={0}
-                      >
-                        <input
-                          type="radio"
-                          name={question.id}
-                          value={option.value}
-                          checked={responses[question.id] === option.value}
-                          onChange={(e) => handleResponseChange(question.id, e.target.value)}
-                          className="sr-only"
-                        />
-                        {responses[question.id] === option.value && (
-                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        )}
-                        <span className="text-xs font-medium block">
-                          {option.label}
-                        </span>
-                      </label>
-                    </div>
+                      role="radio"
+                      aria-checked={responses[question.id] === option.value}
+                    >
+                      {responses[question.id] === option.value && (
+                        <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
+                          <Check className="h-3 w-3 text-white" />
+                        </div>
+                      )}
+                      <span className="text-xs font-medium block">
+                        {option.label}
+                      </span>
+                    </button>
                   ))}
                 </div>
               </div>
