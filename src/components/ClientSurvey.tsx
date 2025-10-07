@@ -6,49 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/contexts/SessionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const surveyQuestions = [
-  // Overall Experience
-  { id: 'overall_satisfied', text: 'I am satisfied with my overall experience at Recovery Point.', category: 'overall' },
-  { id: 'safe_environment', text: 'I feel safe and secure in this environment.', category: 'overall' },
-  { id: 'program_helping', text: 'This program is helping me in my recovery journey.', category: 'overall' },
-  
-  // Staff & Support
-  { id: 'staff_respectful', text: 'Staff members treat me with dignity and respect.', category: 'staff' },
-  { id: 'staff_available', text: 'Staff are available when I need support or have questions.', category: 'staff' },
-  { id: 'staff_knowledgeable', text: 'Staff are knowledgeable and helpful in my recovery.', category: 'staff' },
-  { id: 'concerns_addressed', text: 'My concerns and complaints are addressed in a timely manner.', category: 'staff' },
-  
-  // Program Structure
-  { id: 'rules_fair', text: 'The program rules and restrictions are fair and necessary for recovery.', category: 'program' },
-  { id: 'daily_structure', text: 'The daily structure and schedule supports my recovery goals.', category: 'program' },
-  { id: 'counseling_helpful', text: 'Individual counseling sessions are helpful and meaningful.', category: 'program' },
-  { id: 'group_valuable', text: 'Group therapy sessions provide value to my recovery.', category: 'program' },
-  { id: 'activities_engaging', text: 'Program activities and classes are engaging and beneficial.', category: 'program' },
-  
-  // Living Conditions
-  { id: 'housing_adequate', text: 'The housing accommodations meet my basic needs.', category: 'living' },
-  { id: 'food_satisfactory', text: 'The food quality and meal options are satisfactory.', category: 'living' },
-  { id: 'facility_clean', text: 'The facility is clean and well-maintained.', category: 'living' },
-  { id: 'personal_space', text: 'I have adequate personal space and privacy when needed.', category: 'living' },
-  
-  // Personal Growth
-  { id: 'coping_skills', text: 'I am developing better coping skills for life challenges.', category: 'growth' },
-  { id: 'relationships_improving', text: 'My relationships with family and others are improving.', category: 'growth' },
-  { id: 'future_hopeful', text: 'I feel hopeful about my future after completing this program.', category: 'growth' },
-  { id: 'making_progress', text: 'I can see positive changes in myself since starting the program.', category: 'growth' },
-  
-  // Communication & Resources
-  { id: 'info_clear', text: 'Information about program expectations and progress is communicated clearly.', category: 'communication' },
-  { id: 'resources_available', text: 'Educational and support resources are readily available when I need them.', category: 'communication' },
-  { id: 'tech_adequate', text: 'The kiosk system provides adequate access for my needs.', category: 'communication' },
-  
-  // Recovery Environment
-  { id: 'peers_supportive', text: 'My peers in the program are generally supportive of recovery.', category: 'environment' },
-  { id: 'triggers_managed', text: 'The program helps me identify and manage my triggers effectively.', category: 'environment' },
-  { id: 'spiritual_supported', text: 'My spiritual or personal beliefs are respected and supported.', category: 'environment' },
-  { id: 'prepared_transition', text: 'I feel the program is preparing me for successful transition after completion.', category: 'environment' }
-];
+import { surveyQuestions } from "@/constants/surveyQuestions";
 
 const ratingOptions = [
   { value: '1', label: 'Strongly Disagree', color: 'bg-red-100 border-red-300 text-red-800' },

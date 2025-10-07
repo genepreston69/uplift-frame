@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ResourceForm } from '@/components/ResourceForm';
 import { ExternalLinksForm } from '@/components/ExternalLinksForm';
 import { WhitelistManager } from '@/components/WhitelistManager';
+import { surveyQuestions, ratingLabels, getRatingColor } from '@/constants/surveyQuestions';
 import { 
   FileText, 
   Lightbulb, 
@@ -80,6 +81,7 @@ interface ExternalLinkItem {
 
 interface SurveyResponse {
   id: string;
+  location: string | null;
   tenure: string;
   responses: any;
   open_feedback: any;
@@ -747,97 +749,103 @@ const Admin: React.FC = () => {
                                     View
                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                                   <DialogHeader>
                                     <DialogTitle className="flex items-center gap-2">
                                       <MessageSquare className="h-5 w-5" />
-                                      Survey Response
+                                      Survey Response Details
                                       <Badge variant="outline" className="ml-2">
                                         {survey.reference_number}
                                       </Badge>
                                     </DialogTitle>
                                   </DialogHeader>
                                   <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                    {/* Summary Info */}
+                                    <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                                       <div>
-                                        <strong>Date:</strong> {new Date(survey.created_at).toLocaleString()}
+                                        <strong className="text-sm text-muted-foreground">Date Submitted:</strong>
+                                        <p className="mt-1 font-medium">{new Date(survey.created_at).toLocaleString()}</p>
                                       </div>
+                                      {survey.location && (
+                                        <div>
+                                          <strong className="text-sm text-muted-foreground">Location:</strong>
+                                          <p className="mt-1 font-medium">{survey.location}</p>
+                                        </div>
+                                      )}
                                       <div>
-                                        <strong>Tenure:</strong> {survey.tenure}
+                                        <strong className="text-sm text-muted-foreground">Time in Program:</strong>
+                                        <p className="mt-1 font-medium">{survey.tenure}</p>
                                       </div>
                                     </div>
                                     
+                                    {/* All Survey Questions with Answers */}
                                     {survey.responses && (
-                                      <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold">Survey Responses</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                          {survey.responses.overall_satisfaction && (
-                                            <div className="p-3 bg-muted rounded-md">
-                                              <strong>Overall Satisfaction:</strong>
-                                              <div className="mt-1 text-2xl font-bold text-primary">
-                                                {survey.responses.overall_satisfaction}/5
-                                              </div>
+                                      <div className="space-y-6">
+                                        <h3 className="text-lg font-semibold border-b pb-2">Survey Responses</h3>
+                                        {surveyQuestions.reduce((acc: any[], question) => {
+                                          const categoryExists = acc.find((c: any) => c.category === question.category);
+                                          if (!categoryExists) {
+                                            acc.push({
+                                              category: question.category,
+                                              questions: [question]
+                                            });
+                                          } else {
+                                            categoryExists.questions.push(question);
+                                          }
+                                          return acc;
+                                        }, []).map((categoryGroup: any) => (
+                                          <div key={categoryGroup.category} className="space-y-3">
+                                            <h4 className="font-semibold text-primary">{categoryGroup.category}</h4>
+                                            <div className="space-y-3">
+                                              {categoryGroup.questions.map((question: any) => {
+                                                const answer = survey.responses[question.id];
+                                                return (
+                                                  <div key={question.id} className="p-4 bg-muted/30 rounded-lg border">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                      <p className="text-sm flex-1">{question.text}</p>
+                                                      {answer ? (
+                                                        <Badge className={getRatingColor(answer)}>
+                                                          {ratingLabels[answer]} ({answer})
+                                                        </Badge>
+                                                      ) : (
+                                                        <Badge variant="outline" className="bg-gray-100">
+                                                          Not Answered
+                                                        </Badge>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
                                             </div>
-                                          )}
-                                          {survey.responses.quality_rating && (
-                                            <div className="p-3 bg-muted rounded-md">
-                                              <strong>Quality Rating:</strong>
-                                              <div className="mt-1 text-2xl font-bold text-primary">
-                                                {survey.responses.quality_rating}/5
-                                              </div>
-                                            </div>
-                                          )}
-                                          {survey.responses.staff_helpfulness && (
-                                            <div className="p-3 bg-muted rounded-md">
-                                              <strong>Staff Helpfulness:</strong>
-                                              <div className="mt-1 text-2xl font-bold text-primary">
-                                                {survey.responses.staff_helpfulness}/5
-                                              </div>
-                                            </div>
-                                          )}
-                                          {survey.responses.program_effectiveness && (
-                                            <div className="p-3 bg-muted rounded-md">
-                                              <strong>Program Effectiveness:</strong>
-                                              <div className="mt-1 text-2xl font-bold text-primary">
-                                                {survey.responses.program_effectiveness}/5
-                                              </div>
-                                            </div>
-                                          )}
-                                          {survey.responses.recommend_likelihood && (
-                                            <div className="p-3 bg-muted rounded-md">
-                                              <strong>Recommend Likelihood:</strong>
-                                              <div className="mt-1 text-2xl font-bold text-primary">
-                                                {survey.responses.recommend_likelihood}/5
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
+                                          </div>
+                                        ))}
                                       </div>
                                     )}
 
+                                    {/* Open Feedback Section */}
                                     {survey.open_feedback && (
                                       <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold">Open Feedback</h3>
+                                        <h3 className="text-lg font-semibold border-b pb-2">Open Feedback</h3>
                                         {survey.open_feedback.working_well && (
-                                          <div>
-                                            <strong>What's working well:</strong>
-                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                          <div className="space-y-2">
+                                            <strong className="text-sm text-muted-foreground">What's working well:</strong>
+                                            <p className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-900">
                                               {survey.open_feedback.working_well}
                                             </p>
                                           </div>
                                         )}
                                         {survey.open_feedback.improvements && (
-                                          <div>
-                                            <strong>Areas for improvement:</strong>
-                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                          <div className="space-y-2">
+                                            <strong className="text-sm text-muted-foreground">Areas for improvement:</strong>
+                                            <p className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-900">
                                               {survey.open_feedback.improvements}
                                             </p>
                                           </div>
                                         )}
                                         {survey.open_feedback.additional_comments && (
-                                          <div>
-                                            <strong>Additional comments:</strong>
-                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                          <div className="space-y-2">
+                                            <strong className="text-sm text-muted-foreground">Additional comments:</strong>
+                                            <p className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-900">
                                               {survey.open_feedback.additional_comments}
                                             </p>
                                           </div>
