@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, ClipboardList, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Heart, ClipboardList, ChevronRight, ChevronLeft, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -322,7 +322,7 @@ const ClientSurvey = () => {
                   {ratingOptions.map((option) => (
                     <div key={option.value} className="flex flex-col items-center text-center">
                       <label className={`
-                        w-full p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105
+                        relative w-full p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105
                         ${responses[question.id] === option.value 
                           ? option.color + ' ring-2 ring-offset-2 ring-blue-500' 
                           : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
@@ -336,6 +336,11 @@ const ClientSurvey = () => {
                           onChange={(e) => handleResponseChange(question.id, e.target.value)}
                           className="sr-only"
                         />
+                        {responses[question.id] === option.value && (
+                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
+                            <Check className="h-3 w-3 text-white" />
+                          </div>
+                        )}
                         <span className="text-xs font-medium block">
                           {option.label}
                         </span>
