@@ -318,16 +318,28 @@ const ClientSurvey = () => {
             {getCurrentQuestions().map((question, index) => (
               <div key={question.id} className="bg-white/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200">
                 <label className="text-base font-medium text-gray-800 mb-4 block">{question.text}</label>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={`${question.text} options`}>
                   {ratingOptions.map((option) => (
                     <div key={option.value} className="flex flex-col items-center text-center">
-                      <label className={`
+                      <label
+                        className={`
                         relative w-full p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105
                         ${responses[question.id] === option.value 
                           ? option.color + ' ring-2 ring-offset-2 ring-blue-500' 
                           : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
                         }
-                      `}>
+                      `}
+                        onClick={() => handleResponseChange(question.id, option.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleResponseChange(question.id, option.value);
+                          }
+                        }}
+                        role="radio"
+                        aria-checked={responses[question.id] === option.value}
+                        tabIndex={0}
+                      >
                         <input
                           type="radio"
                           name={question.id}
