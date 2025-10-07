@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,9 +13,20 @@ interface RestrictedBrowserProps {
 }
 
 export const RestrictedBrowser = ({ isOpen, onClose, url, title }: RestrictedBrowserProps) => {
-  const [isLoading, setIsLoading] = useState(true);
   const domainStatus = getDomainStatus(url);
   const domain = getDomainFromUrl(url);
+
+  // Automatically open in new tab when dialog opens
+  useEffect(() => {
+    if (isOpen && url) {
+      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+      if (newWindow) {
+        newWindow.opener = null;
+      }
+      // Close the dialog after opening the link
+      setTimeout(() => onClose(), 500);
+    }
+  }, [isOpen, url, onClose]);
 
   const getStatusBadge = () => {
     switch (domainStatus) {
@@ -47,54 +58,51 @@ export const RestrictedBrowser = ({ isOpen, onClose, url, title }: RestrictedBro
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[80vh] p-0">
+      <DialogContent className="max-w-md p-0">
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <DialogTitle className="text-lg font-semibold truncate max-w-md">
-                {title}
+              <DialogTitle className="text-lg font-semibold">
+                Opening External Link
               </DialogTitle>
               {getStatusBadge()}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openInNewTab}
-                className="text-xs"
-              >
-                <ExternalLink className="h-3 w-3 mr-1" />
-                Open in New Tab
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="text-sm text-muted-foreground truncate">
-            {domain}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </DialogHeader>
         
-        <div className="flex-1 relative">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <ExternalLink className="h-6 w-6 text-primary" />
             </div>
-          )}
-          <iframe
-            src={url}
-            className="w-full h-full border-0"
-            title={title}
-            onLoad={() => setIsLoading(false)}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
+            <div className="flex-1">
+              <h3 className="font-semibold">{title}</h3>
+              <p className="text-sm text-muted-foreground truncate">{domain}</p>
+            </div>
+          </div>
+          
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              This link has been opened in a new browser tab. If it didn't open, please check your browser's popup settings.
+            </p>
+          </div>
+          
+          <Button 
+            onClick={openInNewTab} 
+            className="w-full"
+            variant="outline"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open Link Again
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
