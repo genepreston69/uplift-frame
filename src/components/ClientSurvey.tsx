@@ -7,6 +7,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { surveyQuestions } from "@/constants/surveyQuestions";
+import { useNavigate } from 'react-router-dom';
 
 const ratingOptions = [
   { value: '1', label: 'Strongly Disagree', color: 'bg-red-100 border-red-300 text-red-800' },
@@ -35,6 +36,7 @@ const ClientSurvey = () => {
 
   const { sessionId, logActivity, generateReferenceNumber } = useSession();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const questionsPerPage = 5;
   const totalPages = Math.ceil(surveyQuestions.length / questionsPerPage) + 2;
@@ -125,6 +127,9 @@ const ClientSurvey = () => {
         total_questions: surveyQuestions.length
       });
 
+      // Mark survey as completed in session storage
+      sessionStorage.setItem('surveyCompleted', 'true');
+
       setShowConfirmation(true);
       toast({
         title: "Survey submitted successfully",
@@ -183,6 +188,7 @@ const ClientSurvey = () => {
       }
 
       // Valid reference code found
+      sessionStorage.setItem('surveyCompleted', 'true');
       setSurveyBypassed(true);
       await logActivity('survey_bypassed', { reference_number: bypassReferenceCode });
       toast({
@@ -214,7 +220,7 @@ const ClientSurvey = () => {
             Thank you for verifying your survey completion. You can now access all portal features.
           </p>
           <Button 
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             size="lg"
             className="mt-4"
           >
@@ -269,7 +275,7 @@ const ClientSurvey = () => {
               </p>
             </div>
             <Button 
-              onClick={() => window.location.href = '/'}
+              onClick={() => navigate('/')}
               size="lg"
               className="mt-6"
             >
