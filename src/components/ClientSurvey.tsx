@@ -390,6 +390,17 @@ const ClientSurvey = () => {
                 <option value="over-12">Over 12 months</option>
               </select>
             </div>
+
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-xl p-4 mt-4">
+              <Button
+                onClick={() => setShowBypassForm(true)}
+                variant="outline"
+                className="w-full bg-white hover:bg-blue-50 border-blue-400 text-blue-700 font-medium"
+                type="button"
+              >
+                Click if you already completed - Enter your reference code to bypass
+              </Button>
+            </div>
           </div>
         )}
 
