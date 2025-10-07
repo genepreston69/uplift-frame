@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/contexts/SessionContext';
-import { ExternalLink, Search, Filter, Globe, ArrowUpRight, Sparkles, Shield, AlertTriangle } from 'lucide-react';
+import { ExternalLink, Search, Filter, Globe, ArrowUpRight, Sparkles, Shield, AlertTriangle, Plus } from 'lucide-react';
 import { SecurityWarningDialog } from '@/components/SecurityWarningDialog';
 import { RestrictedBrowser } from '@/components/RestrictedBrowser';
 import { getDomainStatus, getDomainFromUrl as getCleanDomain } from '@/lib/domainWhitelist';
@@ -45,8 +47,12 @@ export const ExternalLinksDisplay: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
   const [selectedLink, setSelectedLink] = useState<ExternalLinkItem | null>(null);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestUrl, setRequestUrl] = useState('');
+  const [requestReason, setRequestReason] = useState('');
+  const [submittingRequest, setSubmittingRequest] = useState(false);
   const { toast } = useToast();
-  const { logActivity } = useSession();
+  const { logActivity, generateReferenceNumber } = useSession();
 
   const fetchLinks = async () => {
     try {
@@ -151,6 +157,61 @@ export const ExternalLinksDisplay: React.FC = () => {
   const handleDialogClose = () => {
     setDialogOpen(false);
     setSelectedLink(null);
+  };
+
+  const handleSubmitRequest = async () => {
+    if (!requestUrl.trim()) {
+      toast({
+        title: "URL Required",
+        description: "Please enter a website URL.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSubmittingRequest(true);
+    try {
+      const refNum = generateReferenceNumber();
+      
+      // Store in submissions table as a website request
+      const { error } = await supabase
+        .from('submissions')
+        .insert({
+          type: 'website_request',
+          reference_number: refNum,
+          content: {
+            url: requestUrl,
+            reason: requestReason,
+            request_type: 'external_link_addition'
+          }
+        });
+
+      if (error) throw error;
+
+      await logActivity('website_request_submitted', { 
+        url: requestUrl,
+        reason: requestReason,
+        reference_number: refNum
+      });
+
+      toast({
+        title: "Request Submitted",
+        description: "Your website request has been submitted for review.",
+      });
+
+      setRequestUrl('');
+      setRequestReason('');
+      setRequestDialogOpen(false);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit request. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmittingRequest(false);
+    }
   };
 
   // Extract domain from URL for favicon (keeping original function for favicon purposes)
@@ -307,6 +368,63 @@ export const ExternalLinksDisplay: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-11 gap-2">
+                  <Plus className="h-4 w-4" />
+                  Request Website
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Request a Website to be Added</DialogTitle>
+                  <DialogDescription>
+                    Submit a request to add a new website to the external links directory.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <label htmlFor="request-url" className="text-sm font-medium">
+                      Website URL *
+                    </label>
+                    <Input
+                      id="request-url"
+                      type="url"
+                      placeholder="https://example.com"
+                      value={requestUrl}
+                      onChange={(e) => setRequestUrl(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="request-reason" className="text-sm font-medium">
+                      Reason for Request (Optional)
+                    </label>
+                    <Textarea
+                      id="request-reason"
+                      placeholder="Why would this website be helpful?"
+                      value={requestReason}
+                      onChange={(e) => setRequestReason(e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setRequestDialogOpen(false)}
+                      disabled={submittingRequest}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSubmitRequest}
+                      disabled={submittingRequest}
+                    >
+                      {submittingRequest ? 'Submitting...' : 'Submit Request'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
