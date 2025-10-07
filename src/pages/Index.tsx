@@ -48,7 +48,7 @@ const Index = () => {
                 <span className="font-medium">Session Information</span>
               </div>
               <ul className="text-xs text-muted-foreground space-y-1 ml-6">
-                <li>• 30-minute maximum session time</li>
+                <li>• 60-minute maximum session time</li>
                 <li>• 10-minute idle timeout</li>
                 <li>• All data cleared when session ends</li>
                 <li>• Save reference numbers immediately</li>
