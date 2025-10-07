@@ -3,9 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSession } from '@/contexts/SessionContext';
 import { 
   BookOpen, 
   ExternalLink, 
@@ -21,7 +24,8 @@ import {
   Briefcase,
   Car,
   Users,
-  ArrowUpRight
+  ArrowUpRight,
+  Plus
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -53,7 +57,12 @@ export const ResourceLibrary: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestTitle, setRequestTitle] = useState('');
+  const [requestDescription, setRequestDescription] = useState('');
+  const [submittingRequest, setSubmittingRequest] = useState(false);
   const { toast } = useToast();
+  const { logActivity, generateReferenceNumber } = useSession();
 
   const fetchResources = async () => {
     try {
@@ -119,6 +128,61 @@ export const ResourceLibrary: React.FC = () => {
         // Open in new tab for viewing
         window.open(resource.file_url, '_blank');
       }
+    }
+  };
+
+  const handleSubmitRequest = async () => {
+    if (!requestTitle.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a resource title.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSubmittingRequest(true);
+    try {
+      const refNum = generateReferenceNumber();
+      
+      // Store in submissions table as a resource request
+      const { error } = await supabase
+        .from('submissions')
+        .insert({
+          type: 'resource_request',
+          reference_number: refNum,
+          content: {
+            title: requestTitle,
+            description: requestDescription,
+            request_type: 'resource_addition'
+          }
+        });
+
+      if (error) throw error;
+
+      await logActivity('resource_request_submitted', { 
+        title: requestTitle,
+        description: requestDescription,
+        reference_number: refNum
+      });
+
+      toast({
+        title: "Request Submitted",
+        description: "Your resource request has been submitted for review.",
+      });
+
+      setRequestTitle('');
+      setRequestDescription('');
+      setRequestDialogOpen(false);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit request. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmittingRequest(false);
     }
   };
 
@@ -278,6 +342,62 @@ export const ResourceLibrary: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-11 gap-2">
+                  <Plus className="h-4 w-4" />
+                  Request Resource
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Request a Resource to be Added</DialogTitle>
+                  <DialogDescription>
+                    Submit a request to add a new resource to the library.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <label htmlFor="request-title" className="text-sm font-medium">
+                      Resource Title *
+                    </label>
+                    <Input
+                      id="request-title"
+                      placeholder="e.g., Resume Writing Guide"
+                      value={requestTitle}
+                      onChange={(e) => setRequestTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="request-description" className="text-sm font-medium">
+                      Description (Optional)
+                    </label>
+                    <Textarea
+                      id="request-description"
+                      placeholder="Why would this resource be helpful?"
+                      value={requestDescription}
+                      onChange={(e) => setRequestDescription(e.target.value)}
+                      rows={4}
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setRequestDialogOpen(false)}
+                      disabled={submittingRequest}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSubmitRequest}
+                      disabled={submittingRequest}
+                    >
+                      {submittingRequest ? 'Submitting...' : 'Submit Request'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
