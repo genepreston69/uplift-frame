@@ -34,7 +34,7 @@ import {
 
 interface Submission {
   id: string;
-  type: 'grievance' | 'innovation';
+  type: 'grievance' | 'innovation' | 'website_request' | 'resource_request';
   reference_number: string;
   content: any;
   created_at: string;
@@ -109,6 +109,7 @@ const Admin: React.FC = () => {
   const [editingExternalLink, setEditingExternalLink] = useState<ExternalLinkItem | undefined>(undefined);
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
   const [selectedSurvey, setSelectedSurvey] = useState<SurveyResponse | null>(null);
+  const [requests, setRequests] = useState<Submission[]>([]);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -133,6 +134,7 @@ const Admin: React.FC = () => {
       const { data, error } = await supabase
         .from('submissions')
         .select('*')
+        .in('type', ['grievance', 'innovation'])
         .order(sortField, { ascending: sortOrder === 'asc' });
 
       if (error) throw error;
@@ -142,6 +144,26 @@ const Admin: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to fetch submissions.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('*')
+        .in('type', ['website_request', 'resource_request'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setRequests((data || []) as Submission[]);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch requests.",
         variant: "destructive"
       });
     }
@@ -205,6 +227,7 @@ const Admin: React.FC = () => {
       fetchResources();
       fetchExternalLinks();
       fetchSurveyResponses();
+      fetchRequests();
     }
   }, [isAuthenticated, sortField, sortOrder]);
 
@@ -500,9 +523,10 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
             <TabsTrigger value="surveys">Surveys</TabsTrigger>
+            <TabsTrigger value="requests">Requests</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="links">External Links</TabsTrigger>
             <TabsTrigger value="whitelist">Whitelist</TabsTrigger>
@@ -855,6 +879,177 @@ const Admin: React.FC = () => {
                                   </div>
                                 </DialogContent>
                               </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="h-5 w-5" />
+                  Client Requests ({requests.length})
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Website and resource requests submitted by clients
+                </p>
+              </CardHeader>
+              <CardContent>
+                {requests.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Plus className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">No requests yet</p>
+                    <p className="text-sm">Client requests will appear here when submitted.</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Reference</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {requests.map((request) => (
+                          <TableRow key={request.id}>
+                            <TableCell className="font-mono font-semibold text-primary">
+                              {request.reference_number}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={request.type === 'website_request' ? 'default' : 'secondary'}>
+                                {request.type === 'website_request' ? (
+                                  <>
+                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    Website
+                                  </>
+                                ) : (
+                                  <>
+                                    <BookOpen className="h-3 w-3 mr-1" />
+                                    Resource
+                                  </>
+                                )}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(request.created_at).toLocaleString()}
+                            </TableCell>
+                            <TableCell className="max-w-xs">
+                              {request.type === 'website_request' ? (
+                                <div className="space-y-1">
+                                  <div className="font-medium truncate">{request.content.url}</div>
+                                  {request.content.reason && (
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {request.content.reason}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="space-y-1">
+                                  <div className="font-medium truncate">{request.content.title}</div>
+                                  {request.content.description && (
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {request.content.description}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline">
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                      <DialogTitle className="flex items-center gap-2">
+                                        {request.type === 'website_request' ? (
+                                          <ExternalLink className="h-5 w-5" />
+                                        ) : (
+                                          <BookOpen className="h-5 w-5" />
+                                        )}
+                                        {request.type === 'website_request' ? 'Website Request' : 'Resource Request'}
+                                        <Badge variant="outline" className="ml-2">
+                                          {request.reference_number}
+                                        </Badge>
+                                      </DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                          <strong>Date:</strong> {new Date(request.created_at).toLocaleString()}
+                                        </div>
+                                        <div>
+                                          <strong>Type:</strong> {request.type.replace('_', ' ')}
+                                        </div>
+                                      </div>
+                                      
+                                      {request.type === 'website_request' ? (
+                                        <div className="space-y-3">
+                                          <div>
+                                            <strong>Website URL:</strong>
+                                            <p className="mt-1 p-3 bg-muted rounded-md break-all">
+                                              {request.content.url}
+                                            </p>
+                                          </div>
+                                          {request.content.reason && (
+                                            <div>
+                                              <strong>Reason for Request:</strong>
+                                              <p className="mt-1 p-3 bg-muted rounded-md">
+                                                {request.content.reason}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-3">
+                                          <div>
+                                            <strong>Resource Title:</strong>
+                                            <p className="mt-1 p-3 bg-muted rounded-md">
+                                              {request.content.title}
+                                            </p>
+                                          </div>
+                                          {request.content.description && (
+                                            <div>
+                                              <strong>Description:</strong>
+                                              <p className="mt-1 p-3 bg-muted rounded-md">
+                                                {request.content.description}
+                                              </p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => {
+                                    const text = `Reference: ${request.reference_number}\nType: ${request.type}\nDate: ${new Date(request.created_at).toLocaleString()}\n\n${request.type === 'website_request' ? `URL: ${request.content.url}\nReason: ${request.content.reason || 'N/A'}` : `Title: ${request.content.title}\nDescription: ${request.content.description || 'N/A'}`}`;
+                                    navigator.clipboard.writeText(text);
+                                    toast({
+                                      title: "Copied",
+                                      description: "Request details copied to clipboard."
+                                    });
+                                  }}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
