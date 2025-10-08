@@ -63,7 +63,17 @@ const Index = () => {
                 <li>• Save reference numbers immediately</li>
               </ul>
             </div>
-            <Button 
+            
+            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 p-4 rounded-lg text-sm space-y-2 border-2 border-blue-500/40">
+              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 text-center leading-relaxed">
+                ALL SURVEY INFORMATION IS KEPT ANONYMOUSLY
+              </p>
+              <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 text-center leading-relaxed">
+                PLEASE WRITE DOWN CONFIRMATION CODES FOR FUTURE USE
+              </p>
+            </div>
+            
+            <Button
               onClick={handleStartSession} 
               className="w-full hover:scale-[1.02] transition-all shadow-lg" 
               size="lg"
