@@ -29,7 +29,7 @@ const ClientSurvey = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showError, setShowError] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
-  const [showBypassForm, setShowBypassForm] = useState(false);
+  const [showBypassForm, setShowBypassForm] = useState(true);
   const [bypassReferenceCode, setBypassReferenceCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [surveyBypassed, setSurveyBypassed] = useState(false);
@@ -295,14 +295,16 @@ const ClientSurvey = () => {
             <ClipboardList className="h-6 w-6" />
             <CardTitle className="text-2xl font-bold">Client Feedback Survey</CardTitle>
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => setShowBypassForm(!showBypassForm)}
-            className="text-white hover:bg-white/20"
-          >
-            {showBypassForm ? 'Hide' : 'Already Completed?'}
-          </Button>
+          {currentPage === 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowBypassForm(!showBypassForm)}
+              className="text-white hover:bg-white/20"
+            >
+              {showBypassForm ? 'Hide' : 'Show'}
+            </Button>
+          )}
         </div>
         
         {showBypassForm && (
@@ -395,17 +397,6 @@ const ClientSurvey = () => {
                 <option value="9-12">9-12 months</option>
                 <option value="over-12">Over 12 months</option>
               </select>
-            </div>
-
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-xl p-4 mt-4">
-              <Button
-                onClick={() => setShowBypassForm(true)}
-                variant="outline"
-                className="w-full bg-white hover:bg-blue-50 border-blue-400 text-blue-700 font-medium"
-                type="button"
-              >
-                Click if you already completed - Enter your reference code to bypass
-              </Button>
             </div>
           </div>
         )}
