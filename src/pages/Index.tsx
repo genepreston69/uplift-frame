@@ -151,7 +151,7 @@ const Index = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="relative">
-                  <Button variant="outline" className="w-full hover:scale-105 transition-all">
+                  <Button className="w-full hover:scale-105 transition-all bg-blue-600 text-white hover:bg-blue-700">
                     <ArrowRight className="h-4 w-4 mr-2" />
                     Browse Resources
                   </Button>
@@ -191,7 +191,7 @@ const Index = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="relative">
-                  <Button variant="outline" className="w-full hover:scale-105 transition-all">
+                  <Button className="w-full hover:scale-105 transition-all bg-blue-600 text-white hover:bg-blue-700">
                     <ArrowRight className="h-4 w-4 mr-2" />
                     View Links
                   </Button>
@@ -231,7 +231,7 @@ const Index = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="relative">
-                  <Button variant="outline" className="w-full hover:scale-105 transition-all">
+                  <Button className="w-full hover:scale-105 transition-all bg-blue-600 text-white hover:bg-blue-700">
                     <ArrowRight className="h-4 w-4 mr-2" />
                     Take Survey
                   </Button>
