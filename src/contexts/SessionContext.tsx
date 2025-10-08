@@ -107,11 +107,15 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         })
         .eq('id', sessionId);
 
+      // Clear all session data
       setSessionId(null);
       setTimeRemaining(0);
       setIsActive(false);
       setActiveSection('home'); // Reset to home page
       setActivityLog([]);
+      
+      // Clear all session storage to start fresh
+      sessionStorage.clear();
       
       toast({
         title: "Session Ended",
