@@ -404,41 +404,34 @@ const ClientSurvey = () => {
         {currentPage > 0 && currentPage < totalPages - 1 && (
           <div className="space-y-6">
             {getCurrentQuestions().map((question, index) => (
-              <div key={question.id} className="bg-white/50 backdrop-blur-sm rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200 overflow-hidden">
-                <div className="p-6">
-                  <label className="text-base font-medium text-gray-800 mb-4 block">{question.text}</label>
-                  <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={question.text}>
-                    {ratingOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => handleResponseChange(question.id, option.value)}
-                        className={`
-                          relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 text-center
-                          ${responses[question.id] === option.value 
-                            ? option.color + ' ring-2 ring-offset-2 ring-blue-500' 
-                            : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                          }
-                        `}
-                        role="radio"
-                        aria-checked={responses[question.id] === option.value}
-                      >
-                        {responses[question.id] === option.value && (
-                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        )}
-                        <span className="text-xs font-medium block">
-                          {option.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-blue-600 px-4 py-3 text-center">
-                  <p className="text-xs font-semibold text-white leading-relaxed">
-                    ALL SURVEY INFORMATION IS KEPT ANONYMOUSLY - PLEASE WRITE DOWN CONFIRMATION CODES SUPPLIED AFTER SUBMISSION FOR FUTURE USE
-                  </p>
+              <div key={question.id} className="bg-white/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200">
+                <label className="text-base font-medium text-gray-800 mb-4 block">{question.text}</label>
+                <div className="grid grid-cols-5 gap-2" role="radiogroup" aria-label={question.text}>
+                  {ratingOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleResponseChange(question.id, option.value)}
+                      className={`
+                        relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-105 text-center
+                        ${responses[question.id] === option.value 
+                          ? option.color + ' ring-2 ring-offset-2 ring-blue-500' 
+                          : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                        }
+                      `}
+                      role="radio"
+                      aria-checked={responses[question.id] === option.value}
+                    >
+                      {responses[question.id] === option.value && (
+                        <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1">
+                          <Check className="h-3 w-3 text-white" />
+                        </div>
+                      )}
+                      <span className="text-xs font-medium block">
+                        {option.label}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
             ))}
@@ -487,6 +480,13 @@ const ClientSurvey = () => {
             </div>
           </div>
         )}
+
+        {/* Anonymity Footer - appears on all survey pages */}
+        <div className="bg-blue-600 px-6 py-4 rounded-lg mt-8 text-center">
+          <p className="text-sm font-semibold text-white leading-relaxed">
+            ALL SURVEY INFORMATION IS KEPT ANONYMOUSLY - PLEASE WRITE DOWN CONFIRMATION CODES SUPPLIED AFTER SUBMISSION FOR FUTURE USE
+          </p>
+        </div>
 
         <div className="flex justify-between mt-8">
           <Button
