@@ -7,7 +7,7 @@ import { GrievanceForm } from '@/components/GrievanceForm';
 import { InnovationForm } from '@/components/InnovationForm';
 import { ResourceLibrary } from '@/components/ResourceLibrary';
 import { ExternalLinksDisplay } from '@/components/ExternalLinksDisplay';
-import { FileText, Lightbulb, BookOpen, ExternalLink, Clock, Sparkles, ArrowRight, ClipboardList } from 'lucide-react';
+import { FileText, Lightbulb, BookOpen, ExternalLink, Clock, Sparkles, ArrowRight, ClipboardList, FileEdit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type ActiveSection = 'home' | 'grievance' | 'innovation' | 'resources' | 'links';
@@ -117,7 +117,46 @@ const Index = () => {
               </CardHeader>
             </Card>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card
+                className={`
+                  relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
+                  bg-gradient-to-br from-green-500/10 to-green-600/20 hover:from-green-500/20 hover:to-green-600/30 border-green-500/30
+                  ${hoveredCard === 'intake' ? 'shadow-xl scale-[1.02] -translate-y-1' : 'shadow-md hover:shadow-lg'}
+                `}
+                onMouseEnter={() => setHoveredCard('intake')}
+                onMouseLeave={() => setHoveredCard(null)}
+                onClick={() => navigate('/intake')}
+              >
+                {/* Animated background gradient */}
+                <div className={`
+                  absolute inset-0 bg-gradient-to-br from-transparent via-green-500/5 to-transparent
+                  transition-opacity duration-500
+                  ${hoveredCard === 'intake' ? 'opacity-100' : 'opacity-0'}
+                `} />
+                
+                <CardHeader className="relative">
+                  <CardTitle className="flex items-center gap-3">
+                    <div className={`
+                      p-2 bg-green-500/10 rounded-lg
+                      transition-all duration-300
+                      ${hoveredCard === 'intake' ? 'scale-110 rotate-3' : ''}
+                    `}>
+                      <FileEdit className="h-6 w-6 text-green-600" />
+                    </div>
+                    Intake Form
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Complete your intake form to begin your journey with us.
+                  </p>
+                </CardHeader>
+                <CardContent className="relative">
+                  <Button className="w-full hover:scale-105 transition-all bg-blue-600 text-white hover:bg-blue-700">
+                    Start Intake
+                  </Button>
+                </CardContent>
+              </Card>
+
               <Card
                 className={`
                   relative overflow-hidden border-2 transition-all duration-300 cursor-pointer
