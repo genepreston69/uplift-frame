@@ -47,6 +47,137 @@ export type Database = {
         }
         Relationships: []
       }
+      intake_submissions: {
+        Row: {
+          additional_notes: string | null
+          address: string | null
+          allergies: Json | null
+          city: string | null
+          created_at: string
+          criminal_history: string | null
+          current_medications: Json | null
+          current_mental_health_treatment: boolean | null
+          date_of_birth: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          employment_status: string | null
+          first_name: string | null
+          form_data: Json | null
+          id: string
+          insurance_group_number: string | null
+          insurance_policy_number: string | null
+          insurance_provider: string | null
+          last_name: string | null
+          last_use_date: string | null
+          legal_issues: string | null
+          medical_conditions: Json | null
+          mental_health_history: string | null
+          phone: string | null
+          previous_treatment: string | null
+          primary_physician: string | null
+          probation_parole: boolean | null
+          psychiatric_medications: Json | null
+          reference_number: string
+          referral_source: string | null
+          session_id: string | null
+          ssn_last_four: string | null
+          state: string | null
+          substances_used: Json | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          address?: string | null
+          allergies?: Json | null
+          city?: string | null
+          created_at?: string
+          criminal_history?: string | null
+          current_medications?: Json | null
+          current_mental_health_treatment?: boolean | null
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          employment_status?: string | null
+          first_name?: string | null
+          form_data?: Json | null
+          id?: string
+          insurance_group_number?: string | null
+          insurance_policy_number?: string | null
+          insurance_provider?: string | null
+          last_name?: string | null
+          last_use_date?: string | null
+          legal_issues?: string | null
+          medical_conditions?: Json | null
+          mental_health_history?: string | null
+          phone?: string | null
+          previous_treatment?: string | null
+          primary_physician?: string | null
+          probation_parole?: boolean | null
+          psychiatric_medications?: Json | null
+          reference_number: string
+          referral_source?: string | null
+          session_id?: string | null
+          ssn_last_four?: string | null
+          state?: string | null
+          substances_used?: Json | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          address?: string | null
+          allergies?: Json | null
+          city?: string | null
+          created_at?: string
+          criminal_history?: string | null
+          current_medications?: Json | null
+          current_mental_health_treatment?: boolean | null
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          employment_status?: string | null
+          first_name?: string | null
+          form_data?: Json | null
+          id?: string
+          insurance_group_number?: string | null
+          insurance_policy_number?: string | null
+          insurance_provider?: string | null
+          last_name?: string | null
+          last_use_date?: string | null
+          legal_issues?: string | null
+          medical_conditions?: Json | null
+          mental_health_history?: string | null
+          phone?: string | null
+          previous_treatment?: string | null
+          primary_physician?: string | null
+          probation_parole?: boolean | null
+          psychiatric_medications?: Json | null
+          reference_number?: string
+          referral_source?: string | null
+          session_id?: string | null
+          ssn_last_four?: string | null
+          state?: string | null
+          substances_used?: Json | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_submissions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resources: {
         Row: {
           category: string
