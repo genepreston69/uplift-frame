@@ -39,6 +39,8 @@ interface Submission {
   content: any;
   created_at: string;
   session_id: string;
+  status: string;
+  admin_notes: string | null;
 }
 
 interface Session {
@@ -299,6 +301,112 @@ const Admin: React.FC = () => {
       toast({
         title: "Error",
         description: "Failed to deny intake request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleApproveWebsiteRequest = async (request: Submission) => {
+    try {
+      // Add to external_links table
+      const { error: linkError } = await supabase
+        .from('external_links')
+        .insert({
+          title: request.content.url,
+          url: request.content.url,
+          category: 'Community Resources',
+          description: request.content.reason || null,
+          guide_text: null
+        });
+
+      if (linkError) throw linkError;
+
+      // Update submission status
+      const { error: updateError } = await supabase
+        .from('submissions')
+        .update({ status: 'approved' })
+        .eq('id', request.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Success",
+        description: "Website request approved and added to external links."
+      });
+
+      fetchRequests();
+      fetchExternalLinks();
+    } catch (error) {
+      console.error('Error approving website request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve website request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleApproveResourceRequest = async (request: Submission) => {
+    try {
+      // Add to resources table
+      const { error: resourceError } = await supabase
+        .from('resources')
+        .insert({
+          title: request.content.title,
+          category: 'Just for Fun',
+          description: request.content.description || null,
+          guide_text: null,
+          url: null,
+          file_url: null
+        });
+
+      if (resourceError) throw resourceError;
+
+      // Update submission status
+      const { error: updateError } = await supabase
+        .from('submissions')
+        .update({ status: 'approved' })
+        .eq('id', request.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Success",
+        description: "Resource request approved and added to resources."
+      });
+
+      fetchRequests();
+      fetchResources();
+    } catch (error) {
+      console.error('Error approving resource request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve resource request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDenyRequest = async (id: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('submissions')
+        .update({ status: 'denied', admin_notes: notes })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Request denied."
+      });
+
+      fetchRequests();
+    } catch (error) {
+      console.error('Error denying request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to deny request.",
         variant: "destructive"
       });
     }
@@ -1194,7 +1302,7 @@ const Admin: React.FC = () => {
 
           <TabsContent value="requests" className="space-y-6">
             <Card>
-              <CardHeader>
+               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Plus className="h-5 w-5" />
                   Client Requests ({requests.length})
@@ -1202,6 +1310,17 @@ const Admin: React.FC = () => {
                 <p className="text-sm text-muted-foreground mt-2">
                   Website and resource requests submitted by clients
                 </p>
+                <div className="flex gap-2 mt-4">
+                  <Badge variant="secondary">
+                    Pending: {requests.filter(r => r.status === 'pending').length}
+                  </Badge>
+                  <Badge variant="default" className="bg-green-600">
+                    Approved: {requests.filter(r => r.status === 'approved').length}
+                  </Badge>
+                  <Badge variant="destructive">
+                    Denied: {requests.filter(r => r.status === 'denied').length}
+                  </Badge>
+                </div>
               </CardHeader>
               <CardContent>
                 {requests.length === 0 ? (
@@ -1217,6 +1336,7 @@ const Admin: React.FC = () => {
                         <TableRow>
                           <TableHead>Reference</TableHead>
                           <TableHead>Type</TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Details</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
@@ -1241,6 +1361,18 @@ const Admin: React.FC = () => {
                                     Resource
                                   </>
                                 )}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  request.status === 'approved' ? 'default' : 
+                                  request.status === 'denied' ? 'destructive' : 
+                                  'secondary'
+                                }
+                                className={request.status === 'approved' ? 'bg-green-600' : ''}
+                              >
+                                {request.status || 'pending'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -1289,52 +1421,135 @@ const Admin: React.FC = () => {
                                         </Badge>
                                       </DialogTitle>
                                     </DialogHeader>
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                          <strong>Date:</strong> {new Date(request.created_at).toLocaleString()}
-                                        </div>
-                                        <div>
-                                          <strong>Type:</strong> {request.type.replace('_', ' ')}
-                                        </div>
-                                      </div>
-                                      
-                                      {request.type === 'website_request' ? (
-                                        <div className="space-y-3">
-                                          <div>
-                                            <strong>Website URL:</strong>
-                                            <p className="mt-1 p-3 bg-muted rounded-md break-all">
-                                              {request.content.url}
-                                            </p>
-                                          </div>
-                                          {request.content.reason && (
-                                            <div>
-                                              <strong>Reason for Request:</strong>
-                                              <p className="mt-1 p-3 bg-muted rounded-md">
-                                                {request.content.reason}
-                                              </p>
-                                            </div>
-                                          )}
-                                        </div>
-                                      ) : (
-                                        <div className="space-y-3">
-                                          <div>
-                                            <strong>Resource Title:</strong>
-                                            <p className="mt-1 p-3 bg-muted rounded-md">
-                                              {request.content.title}
-                                            </p>
-                                          </div>
-                                          {request.content.description && (
-                                            <div>
-                                              <strong>Description:</strong>
-                                              <p className="mt-1 p-3 bg-muted rounded-md">
-                                                {request.content.description}
-                                              </p>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-                                    </div>
+                                     <div className="space-y-4">
+                                       <div className="grid grid-cols-2 gap-4 text-sm">
+                                         <div>
+                                           <strong>Date:</strong> {new Date(request.created_at).toLocaleString()}
+                                         </div>
+                                         <div>
+                                           <strong>Type:</strong> {request.type.replace('_', ' ')}
+                                         </div>
+                                       </div>
+                                       
+                                       {request.type === 'website_request' ? (
+                                         <div className="space-y-3">
+                                           <div>
+                                             <strong>Website URL:</strong>
+                                             <p className="mt-1 p-3 bg-muted rounded-md break-all">
+                                               {request.content.url}
+                                             </p>
+                                           </div>
+                                           {request.content.reason && (
+                                             <div>
+                                               <strong>Reason for Request:</strong>
+                                               <p className="mt-1 p-3 bg-muted rounded-md">
+                                                 {request.content.reason}
+                                               </p>
+                                             </div>
+                                           )}
+                                         </div>
+                                       ) : (
+                                         <div className="space-y-3">
+                                           <div>
+                                             <strong>Resource Title:</strong>
+                                             <p className="mt-1 p-3 bg-muted rounded-md">
+                                               {request.content.title}
+                                             </p>
+                                           </div>
+                                           {request.content.description && (
+                                             <div>
+                                               <strong>Description:</strong>
+                                               <p className="mt-1 p-3 bg-muted rounded-md">
+                                                 {request.content.description}
+                                               </p>
+                                             </div>
+                                           )}
+                                         </div>
+                                       )}
+
+                                       {/* Status Badge */}
+                                       <div>
+                                         <strong>Status:</strong>
+                                         <Badge 
+                                           variant={
+                                             request.status === 'approved' ? 'default' : 
+                                             request.status === 'denied' ? 'destructive' : 
+                                             'secondary'
+                                           }
+                                           className={`ml-2 ${request.status === 'approved' ? 'bg-green-600' : ''}`}
+                                         >
+                                           {request.status || 'pending'}
+                                         </Badge>
+                                       </div>
+
+                                       {/* Admin Notes */}
+                                       {request.admin_notes && (
+                                         <div className="space-y-2">
+                                           <strong className="text-sm text-muted-foreground">Admin Notes:</strong>
+                                           <p className="p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-900">
+                                             {request.admin_notes}
+                                           </p>
+                                         </div>
+                                       )}
+
+                                       {/* Action Buttons */}
+                                       {request.status === 'pending' && (
+                                         <div className="flex gap-3 pt-4 border-t">
+                                           <Button 
+                                             onClick={() => {
+                                               if (request.type === 'website_request') {
+                                                 handleApproveWebsiteRequest(request);
+                                               } else {
+                                                 handleApproveResourceRequest(request);
+                                               }
+                                             }}
+                                             className="flex-1 bg-green-600 hover:bg-green-700"
+                                           >
+                                             <Shield className="h-4 w-4 mr-2" />
+                                             Approve & Add to {request.type === 'website_request' ? 'Links' : 'Resources'}
+                                           </Button>
+                                           <Dialog>
+                                             <DialogTrigger asChild>
+                                               <Button 
+                                                 variant="destructive"
+                                                 className="flex-1"
+                                               >
+                                                 <Trash2 className="h-4 w-4 mr-2" />
+                                                 Deny Request
+                                               </Button>
+                                             </DialogTrigger>
+                                             <DialogContent>
+                                               <DialogHeader>
+                                                 <DialogTitle>Deny Request</DialogTitle>
+                                               </DialogHeader>
+                                               <div className="space-y-4">
+                                                 <Label htmlFor="request-deny-notes">Reason for denial (optional)</Label>
+                                                 <Input
+                                                   id="request-deny-notes"
+                                                   placeholder="Enter reason..."
+                                                   onKeyDown={(e) => {
+                                                     if (e.key === 'Enter') {
+                                                       handleDenyRequest(request.id, e.currentTarget.value);
+                                                     }
+                                                   }}
+                                                 />
+                                                 <div className="flex gap-2">
+                                                   <Button
+                                                     variant="destructive"
+                                                     onClick={() => {
+                                                       const notes = (document.getElementById('request-deny-notes') as HTMLInputElement)?.value;
+                                                       handleDenyRequest(request.id, notes || '');
+                                                     }}
+                                                   >
+                                                     Confirm Denial
+                                                   </Button>
+                                                 </div>
+                                               </div>
+                                             </DialogContent>
+                                           </Dialog>
+                                         </div>
+                                       )}
+                                     </div>
                                   </DialogContent>
                                 </Dialog>
                                 <Button 
