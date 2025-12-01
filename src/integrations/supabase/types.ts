@@ -249,27 +249,33 @@ export type Database = {
       }
       submissions: {
         Row: {
+          admin_notes: string | null
           content: Json
           created_at: string
           id: string
           reference_number: string
           session_id: string | null
+          status: string | null
           type: string
         }
         Insert: {
+          admin_notes?: string | null
           content: Json
           created_at?: string
           id?: string
           reference_number: string
           session_id?: string | null
+          status?: string | null
           type: string
         }
         Update: {
+          admin_notes?: string | null
           content?: Json
           created_at?: string
           id?: string
           reference_number?: string
           session_id?: string | null
+          status?: string | null
           type?: string
         }
         Relationships: [
