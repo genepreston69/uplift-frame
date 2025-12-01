@@ -129,14 +129,24 @@ const Admin: React.FC = () => {
   const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
   const { toast } = useToast();
 
+  // Check for existing admin session on mount
+  useEffect(() => {
+    const adminSession = sessionStorage.getItem('adminAuthenticated');
+    if (adminSession === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
+      sessionStorage.setItem('adminAuthenticated', 'true');
       toast({
         title: "Access Granted",
         description: "Welcome to the admin dashboard."
       });
+      // Hard refresh to ensure clean state
+      window.location.reload();
     } else {
       toast({
         title: "Access Denied",
@@ -710,7 +720,14 @@ const Admin: React.FC = () => {
               <p className="text-muted-foreground">Client Resource Portal Management</p>
             </div>
           </div>
-          <Button onClick={() => setIsAuthenticated(false)} variant="outline">
+          <Button 
+            onClick={() => {
+              sessionStorage.removeItem('adminAuthenticated');
+              setIsAuthenticated(false);
+              window.location.reload();
+            }} 
+            variant="outline"
+          >
             Logout
           </Button>
         </div>

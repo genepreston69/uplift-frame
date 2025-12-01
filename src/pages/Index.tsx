@@ -19,6 +19,7 @@ const Index = () => {
 
   const handleStartSession = async () => {
     await startSession();
+    window.location.reload();
   };
 
   const handleNavigation = (section: ActiveSection) => {

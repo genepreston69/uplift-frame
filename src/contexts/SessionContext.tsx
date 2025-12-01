@@ -29,6 +29,33 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [lastActivity, setLastActivity] = useState(Date.now());
   const { toast } = useToast();
 
+  // Check for existing session on mount
+  useEffect(() => {
+    const storedSession = sessionStorage.getItem('clientSession');
+    if (storedSession) {
+      try {
+        const session = JSON.parse(storedSession);
+        const elapsed = Date.now() - session.startTime;
+        const remaining = SESSION_DURATION - elapsed;
+        
+        if (remaining > 0) {
+          setSessionId(session.id);
+          setTimeRemaining(remaining);
+          setIsActive(true);
+          setActiveSection(session.activeSection || 'home');
+          setActivityLog(session.activityLog || []);
+          setLastActivity(session.lastActivity || Date.now());
+        } else {
+          // Session expired, clean up
+          sessionStorage.removeItem('clientSession');
+        }
+      } catch (error) {
+        console.error('Error restoring session:', error);
+        sessionStorage.removeItem('clientSession');
+      }
+    }
+  }, []);
+
   // Reset idle timer on user activity
   const resetIdleTimer = useCallback(() => {
     setLastActivity(Date.now());
@@ -67,12 +94,24 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       if (error) throw error;
 
+      const startTime = Date.now();
+      const sessionData = {
+        id: data.id,
+        startTime,
+        activeSection: 'home',
+        activityLog: [],
+        lastActivity: startTime
+      };
+
+      // Store session in sessionStorage
+      sessionStorage.setItem('clientSession', JSON.stringify(sessionData));
+
       setSessionId(data.id);
       setTimeRemaining(SESSION_DURATION);
       setIsActive(true);
-      setActiveSection('home'); // Always start at home page
+      setActiveSection('home');
       setActivityLog([]);
-      setLastActivity(Date.now());
+      setLastActivity(startTime);
       
       logActivity('session_started');
       
@@ -174,6 +213,27 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
     };
   }, [resetIdleTimer]);
+
+  // Sync session state to sessionStorage
+  useEffect(() => {
+    if (isActive && sessionId) {
+      const storedSession = sessionStorage.getItem('clientSession');
+      if (storedSession) {
+        try {
+          const session = JSON.parse(storedSession);
+          const updatedSession = {
+            ...session,
+            activeSection,
+            activityLog,
+            lastActivity
+          };
+          sessionStorage.setItem('clientSession', JSON.stringify(updatedSession));
+        } catch (error) {
+          console.error('Error syncing session to storage:', error);
+        }
+      }
+    }
+  }, [isActive, sessionId, activeSection, activityLog, lastActivity]);
 
   const value: SessionContextType = {
     sessionId,
