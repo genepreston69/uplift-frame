@@ -19,11 +19,6 @@ const Index = () => {
 
   const handleStartSession = async () => {
     await startSession();
-    // Only redirect to survey if not already completed
-    const surveyCompleted = sessionStorage.getItem('surveyCompleted');
-    if (!surveyCompleted) {
-      navigate('/survey');
-    }
   };
 
   const handleNavigation = (section: ActiveSection) => {
