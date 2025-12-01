@@ -90,6 +90,19 @@ interface SurveyResponse {
   created_at: string;
 }
 
+interface IntakeSubmission {
+  id: string;
+  reference_number: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  email: string | null;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+  form_data: any;
+}
+
 const ADMIN_PASSWORD = "admin";
 
 const Admin: React.FC = () => {
@@ -110,6 +123,8 @@ const Admin: React.FC = () => {
   const [surveyResponses, setSurveyResponses] = useState<SurveyResponse[]>([]);
   const [selectedSurvey, setSelectedSurvey] = useState<SurveyResponse | null>(null);
   const [requests, setRequests] = useState<Submission[]>([]);
+  const [intakeSubmissions, setIntakeSubmissions] = useState<IntakeSubmission[]>([]);
+  const [selectedIntake, setSelectedIntake] = useState<IntakeSubmission | null>(null);
   const { toast } = useToast();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -220,6 +235,75 @@ const Admin: React.FC = () => {
     });
   };
 
+  const fetchIntakeSubmissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('intake_submissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setIntakeSubmissions((data || []) as IntakeSubmission[]);
+    } catch (error) {
+      console.error('Error fetching intake submissions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch intake submissions.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleApproveIntake = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('intake_submissions')
+        .update({ status: 'approved' })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Intake request approved successfully."
+      });
+
+      fetchIntakeSubmissions();
+    } catch (error) {
+      console.error('Error approving intake:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve intake request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDenyIntake = async (id: string, notes: string) => {
+    try {
+      const { error } = await supabase
+        .from('intake_submissions')
+        .update({ status: 'denied', admin_notes: notes })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Intake request denied."
+      });
+
+      fetchIntakeSubmissions();
+    } catch (error) {
+      console.error('Error denying intake:', error);
+      toast({
+        title: "Error",
+        description: "Failed to deny intake request.",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchSubmissions();
@@ -228,6 +312,7 @@ const Admin: React.FC = () => {
       fetchExternalLinks();
       fetchSurveyResponses();
       fetchRequests();
+      fetchIntakeSubmissions();
     }
   }, [isAuthenticated, sortField, sortOrder]);
 
@@ -523,9 +608,10 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="submissions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="submissions">Submissions</TabsTrigger>
             <TabsTrigger value="surveys">Surveys</TabsTrigger>
+            <TabsTrigger value="intake">Intake Requests</TabsTrigger>
             <TabsTrigger value="requests">Requests</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="links">External Links</TabsTrigger>
@@ -879,6 +965,222 @@ const Admin: React.FC = () => {
                                   </div>
                                 </DialogContent>
                               </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="intake" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Intake Requests ({intakeSubmissions.length})
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Review and manage client intake submissions
+                </p>
+                <div className="flex gap-2 mt-4">
+                  <Badge variant="secondary">
+                    Pending: {intakeSubmissions.filter(i => i.status === 'pending').length}
+                  </Badge>
+                  <Badge variant="default" className="bg-green-600">
+                    Approved: {intakeSubmissions.filter(i => i.status === 'approved').length}
+                  </Badge>
+                  <Badge variant="destructive">
+                    Denied: {intakeSubmissions.filter(i => i.status === 'denied').length}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {intakeSubmissions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium mb-2">No intake submissions yet</p>
+                    <p className="text-sm">Intake submissions will appear here when clients complete the intake form.</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Reference</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {intakeSubmissions.map((intake) => (
+                          <TableRow key={intake.id}>
+                            <TableCell className="font-mono font-semibold text-primary">
+                              {intake.reference_number}
+                            </TableCell>
+                            <TableCell>
+                              {intake.first_name && intake.last_name 
+                                ? `${intake.first_name} ${intake.last_name}`
+                                : 'Not provided'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm space-y-1">
+                                {intake.phone && <div>{intake.phone}</div>}
+                                {intake.email && <div className="text-muted-foreground">{intake.email}</div>}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={
+                                  intake.status === 'approved' ? 'default' : 
+                                  intake.status === 'denied' ? 'destructive' : 
+                                  'secondary'
+                                }
+                                className={intake.status === 'approved' ? 'bg-green-600' : ''}
+                              >
+                                {intake.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(intake.created_at).toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => setSelectedIntake(intake)}
+                                    >
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle className="flex items-center gap-2">
+                                        <FileText className="h-5 w-5" />
+                                        Intake Submission Details
+                                        <Badge variant="outline" className="ml-2">
+                                          {intake.reference_number}
+                                        </Badge>
+                                        <Badge 
+                                          variant={
+                                            intake.status === 'approved' ? 'default' : 
+                                            intake.status === 'denied' ? 'destructive' : 
+                                            'secondary'
+                                          }
+                                          className={intake.status === 'approved' ? 'bg-green-600' : ''}
+                                        >
+                                          {intake.status}
+                                        </Badge>
+                                      </DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-6">
+                                      {/* Personal Information */}
+                                      <div className="space-y-4">
+                                        <h3 className="text-lg font-semibold border-b pb-2">Personal Information</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <strong className="text-sm text-muted-foreground">Name:</strong>
+                                            <p className="mt-1">{intake.first_name} {intake.last_name}</p>
+                                          </div>
+                                          <div>
+                                            <strong className="text-sm text-muted-foreground">Date Submitted:</strong>
+                                            <p className="mt-1">{new Date(intake.created_at).toLocaleString()}</p>
+                                          </div>
+                                          {intake.phone && (
+                                            <div>
+                                              <strong className="text-sm text-muted-foreground">Phone:</strong>
+                                              <p className="mt-1">{intake.phone}</p>
+                                            </div>
+                                          )}
+                                          {intake.email && (
+                                            <div>
+                                              <strong className="text-sm text-muted-foreground">Email:</strong>
+                                              <p className="mt-1">{intake.email}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Admin Notes */}
+                                      {intake.admin_notes && (
+                                        <div className="space-y-2">
+                                          <strong className="text-sm text-muted-foreground">Admin Notes:</strong>
+                                          <p className="p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-900">
+                                            {intake.admin_notes}
+                                          </p>
+                                        </div>
+                                      )}
+
+                                      {/* Action Buttons */}
+                                      {intake.status === 'pending' && (
+                                        <div className="flex gap-3 pt-4 border-t">
+                                          <Button 
+                                            onClick={() => {
+                                              handleApproveIntake(intake.id);
+                                              setSelectedIntake(null);
+                                            }}
+                                            className="flex-1 bg-green-600 hover:bg-green-700"
+                                          >
+                                            <Shield className="h-4 w-4 mr-2" />
+                                            Approve Request
+                                          </Button>
+                                          <Dialog>
+                                            <DialogTrigger asChild>
+                                              <Button 
+                                                variant="destructive"
+                                                className="flex-1"
+                                              >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                Deny Request
+                                              </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                              <DialogHeader>
+                                                <DialogTitle>Deny Intake Request</DialogTitle>
+                                              </DialogHeader>
+                                              <div className="space-y-4">
+                                                <Label htmlFor="deny-notes">Reason for denial (optional)</Label>
+                                                <Input
+                                                  id="deny-notes"
+                                                  placeholder="Enter reason..."
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                      handleDenyIntake(intake.id, e.currentTarget.value);
+                                                      setSelectedIntake(null);
+                                                    }
+                                                  }}
+                                                />
+                                                <div className="flex gap-2">
+                                                  <Button
+                                                    variant="destructive"
+                                                    onClick={() => {
+                                                      const notes = (document.getElementById('deny-notes') as HTMLInputElement)?.value;
+                                                      handleDenyIntake(intake.id, notes || '');
+                                                      setSelectedIntake(null);
+                                                    }}
+                                                  >
+                                                    Confirm Denial
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            </DialogContent>
+                                          </Dialog>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}

@@ -51,6 +51,7 @@ export type Database = {
         Row: {
           additional_notes: string | null
           address: string | null
+          admin_notes: string | null
           allergies: Json | null
           city: string | null
           created_at: string
@@ -84,6 +85,7 @@ export type Database = {
           session_id: string | null
           ssn_last_four: string | null
           state: string | null
+          status: string | null
           substances_used: Json | null
           updated_at: string
           zip_code: string | null
@@ -91,6 +93,7 @@ export type Database = {
         Insert: {
           additional_notes?: string | null
           address?: string | null
+          admin_notes?: string | null
           allergies?: Json | null
           city?: string | null
           created_at?: string
@@ -124,6 +127,7 @@ export type Database = {
           session_id?: string | null
           ssn_last_four?: string | null
           state?: string | null
+          status?: string | null
           substances_used?: Json | null
           updated_at?: string
           zip_code?: string | null
@@ -131,6 +135,7 @@ export type Database = {
         Update: {
           additional_notes?: string | null
           address?: string | null
+          admin_notes?: string | null
           allergies?: Json | null
           city?: string | null
           created_at?: string
@@ -164,6 +169,7 @@ export type Database = {
           session_id?: string | null
           ssn_last_four?: string | null
           state?: string | null
+          status?: string | null
           substances_used?: Json | null
           updated_at?: string
           zip_code?: string | null
