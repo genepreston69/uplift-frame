@@ -1401,13 +1401,68 @@ const Admin: React.FC = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex gap-2 justify-end">
+                                {request.status === 'pending' && (
+                                  <>
+                                    <Button 
+                                      size="sm" 
+                                      onClick={() => {
+                                        if (request.type === 'website_request') {
+                                          handleApproveWebsiteRequest(request);
+                                        } else {
+                                          handleApproveResourceRequest(request);
+                                        }
+                                      }}
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      <Shield className="h-4 w-4 mr-1" />
+                                      Approve
+                                    </Button>
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button 
+                                          size="sm"
+                                          variant="destructive"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-1" />
+                                          Deny
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>Deny Request</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <Label htmlFor={`deny-notes-${request.id}`}>Reason for denial (optional)</Label>
+                                          <Input
+                                            id={`deny-notes-${request.id}`}
+                                            placeholder="Enter reason..."
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') {
+                                                handleDenyRequest(request.id, e.currentTarget.value);
+                                              }
+                                            }}
+                                          />
+                                          <Button
+                                            variant="destructive"
+                                            onClick={() => {
+                                              const notes = (document.getElementById(`deny-notes-${request.id}`) as HTMLInputElement)?.value;
+                                              handleDenyRequest(request.id, notes || '');
+                                            }}
+                                          >
+                                            Confirm Denial
+                                          </Button>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </>
+                                )}
                                 <Dialog>
                                   <DialogTrigger asChild>
                                     <Button size="sm" variant="outline">
                                       <Eye className="h-4 w-4" />
                                     </Button>
                                   </DialogTrigger>
-                                  <DialogContent className="max-w-2xl">
+                                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                                     <DialogHeader>
                                       <DialogTitle className="flex items-center gap-2">
                                         {request.type === 'website_request' ? (
